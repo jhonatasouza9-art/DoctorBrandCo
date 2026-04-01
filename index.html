@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DoctorBrand · Área de Membros</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf8;
+    --surface: #ffffff;
+    --border: #e8e5e0;
+    --border-soft: #f0ede8;
+    --text: #1a1916;
+    --text-2: #6b6760;
+    --text-3: #a8a5a0;
+    --accent: #1a1916;
+    --accent-soft: #f0ede8;
+    --green: #2d6a4f;
+    --green-bg: #d8f3dc;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --blue: #1a5276;
+    --blue-bg: #d6eaf8;
+    --yellow: #7d6608;
+    --yellow-bg: #fef9e7;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+    --shadow-md: 0 2px 8px rgba(0,0,0,.08), 0 8px 32px rgba(0,0,0,.06);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.6; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  /* ── PAGES ── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; }
+
+  /* ═══════════════════════════════════
+     LOGIN PAGE
+  ═══════════════════════════════════ */
+  #page-login {
+    align-items: center; justify-content: center;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 20% 20%, #f5f0e8 0%, transparent 60%),
+                      radial-gradient(circle at 80% 80%, #edf2f0 0%, transparent 60%);
+  }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 48px 40px;
+    width: 420px;
+    box-shadow: var(--shadow-md);
+    animation: fadeUp .4s ease both;
+  }
+  .login-logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -.3px;
+    color: var(--text);
+    margin-bottom: 32px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .login-logo span { font-weight: 400; color: var(--text-2); font-size: 18px; }
+  .login-logo-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: inline-block; }
+  .login-title { font-size: 24px; font-weight: 600; letter-spacing: -.4px; margin-bottom: 4px; }
+  .login-sub { color: var(--text-2); font-size: 13px; margin-bottom: 32px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-2); margin-bottom: 6px; letter-spacing: .3px; text-transform: uppercase; }
+  .field input {
+    width: 100%; padding: 10px 14px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px; color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    transition: border .15s, box-shadow .15s;
+    outline: none;
+  }
+  .field input:focus { border-color: var(--text); box-shadow: 0 0 0 3px rgba(26,25,22,.07); }
+  .btn-primary {
+    width: 100%; padding: 11px; margin-top: 8px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity .15s, transform .1s;
+    letter-spacing: .1px;
+  }
+  .btn-primary:hover { opacity: .88; }
+  .btn-primary:active { transform: scale(.99); }
+  .login-error {
+    margin-top: 12px; padding: 10px 14px;
+    background: var(--red-bg); color: var(--red);
+    border-radius: var(--radius-sm); font-size: 13px;
+    display: none;
+  }
+  .login-error.show { display: block; }
+  .login-footer { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-soft); text-align: center; font-size: 12px; color: var(--text-3); }
+
+  /* ═══════════════════════════════════
+     SHELL (SIDEBAR + MAIN)
+  ═══════════════════════════════════ */
+  #page-member, #page-admin {
+    flex-direction: row;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px; min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 24px 0;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 10;
+  }
+  .sidebar-logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 17px; padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 16px;
+    color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sidebar-logo-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; }
+  .sidebar-section { padding: 0 12px; margin-bottom: 4px; }
+  .sidebar-label { font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .8px; padding: 0 8px; margin-bottom: 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    cursor: pointer; color: var(--text-2); font-size: 13px;
+    transition: background .12s, color .12s;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active { background: var(--accent-soft); color: var(--text); font-weight: 500; }
+  .nav-item svg { flex-shrink: 0; opacity: .7; }
+  .nav-item.active svg { opacity: 1; }
+  .sidebar-spacer { flex: 1; }
+  .sidebar-user {
+    padding: 16px 12px 0; border-top: 1px solid var(--border-soft);
+    margin-top: 8px;
+  }
+  .user-chip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .user-chip:hover { background: var(--bg); }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--text-3); }
+  .logout-btn {
+    margin: 6px 12px 0; width: calc(100% - 24px);
+    padding: 7px; border: 1px solid var(--border);
+    background: none; border-radius: var(--radius-sm);
+    font-size: 12px; color: var(--text-2); cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background .12s, color .12s;
+  }
+  .logout-btn:hover { background: var(--red-bg); color: var(--red); border-color: transparent; }
+
+  /* ── MAIN ── */
+  .main { margin-left: 240px; flex: 1; min-height: 100vh; }
+  .topbar {
+    height: 56px; padding: 0 32px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface); position: sticky; top: 0; z-index: 5;
+  }
+  .topbar-title { font-size: 15px; font-weight: 600; letter-spacing: -.2px; }
+  .topbar-badge {
+    font-size: 11px; padding: 3px 10px;
+    border-radius: 99px; font-weight: 500;
+  }
+  .badge-admin { background: var(--accent); color: #fff; }
+  .badge-member { background: var(--accent-soft); color: var(--text); }
+  .content { padding: 32px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    box-shadow: var(--shadow); margin-bottom: 20px;
+  }
+  .card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; letter-spacing: -.2px; }
+  .card-sub { font-size: 12px; color: var(--text-2); margin-bottom: 20px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .section-header h2 { font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* ── STAT CARD ── */
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .stat-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; }
+  .stat-value { font-size: 28px; font-weight: 600; letter-spacing: -1px; margin: 4px 0 2px; font-family: 'Instrument Serif', serif; }
+  .stat-change { font-size: 12px; color: var(--text-2); }
+
+  /* ── CONTENT BLOCK ── */
+  .content-block {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .content-block-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border-soft);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .content-block-icon {
+    width: 36px; height: 36px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .content-block-title { font-weight: 600; font-size: 14px; }
+  .content-block-meta { font-size: 12px; color: var(--text-2); }
+  .content-block-body { padding: 16px 20px; }
+
+  /* ── TASK LIST ── */
+  .task-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--border-soft);
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-check {
+    width: 18px; height: 18px; border: 1.5px solid var(--border);
+    border-radius: 4px; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s; background: var(--bg);
+  }
+  .task-check.done { background: var(--green); border-color: var(--green); }
+  .task-check.done::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+  .task-text { flex: 1; font-size: 13px; }
+  .task-text.done { text-decoration: line-through; color: var(--text-3); }
+  .task-tag { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
+
+  /* ── TAGS ── */
+  .tag-green { background: var(--green-bg); color: var(--green); }
+  .tag-blue { background: var(--blue-bg); color: var(--blue); }
+  .tag-yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .tag-red { background: var(--red-bg); color: var(--red); }
+  .tag-gray { background: var(--border-soft); color: var(--text-2); }
+
+  /* ── DOC LIST ── */
+  .doc-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: background .12s;
+    border: 1px solid transparent;
+  }
+  .doc-item:hover { background: var(--bg); border-color: var(--border-soft); }
+  .doc-icon { font-size: 20px; }
+  .doc-name { font-size: 13px; font-weight: 500; }
+  .doc-date { font-size: 11px; color: var(--text-3); }
+  .doc-arrow { margin-left: auto; color: var(--text-3); font-size: 12px; }
+
+  /* ── VIDEO CARD ── */
+  .video-card {
+    border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+    cursor: pointer; transition: box-shadow .15s, transform .15s;
+  }
+  .video-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .video-thumb {
+    aspect-ratio: 16/9; background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; position: relative; overflow: hidden;
+  }
+  .video-play {
+    position: absolute; width: 44px; height: 44px;
+    background: rgba(26,25,22,.85); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 16px;
+  }
+  .video-info { padding: 12px; }
+  .video-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .video-meta { font-size: 11px; color: var(--text-3); }
+
+  /* ─── ADMIN TABLE ─── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  /* ─── BUTTONS ─── */
+  .btn { padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .12s; border: none; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-dark { background: var(--accent); color: #fff; }
+  .btn-dark:hover { opacity: .85; }
+  .btn-ghost { background: none; border: 1px solid var(--border); color: var(--text-2); }
+  .btn-ghost:hover { border-color: var(--text-2); color: var(--text); }
+  .btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid transparent; }
+  .btn-danger:hover { background: var(--red); color: white; }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(26,25,22,.35);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border-radius: 14px;
+    width: 540px; max-width: 92vw; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 8px 40px rgba(0,0,0,.18);
+    transform: scale(.96) translateY(8px); transition: transform .2s;
+    padding: 32px;
+  }
+  .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+  .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; letter-spacing: -.3px; }
+  .modal-sub { font-size: 13px; color: var(--text-2); margin-bottom: 24px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-soft); }
+  .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-3); line-height: 1; }
+
+  /* ─── FORM ─── */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--text-2); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .3px; }
+  .form-input {
+    width: 100%; padding: 9px 12px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg); color: var(--text); font-size: 14px;
+    font-family: 'DM Sans', sans-serif; outline: none;
+    transition: border .15s;
+  }
+  .form-input:focus { border-color: var(--text); }
+  .form-select {
+    width: 100%; padding: 9px 12px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg); color: var(--text); font-size: 14px;
+    font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
+  }
+  .perm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
+  .perm-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); cursor: pointer;
+    transition: all .12s; font-size: 13px;
+  }
+  .perm-item.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .perm-item input[type=checkbox] { accent-color: var(--accent); }
+
+  /* ─── CONTENT SECTION ADMIN ─── */
+  .content-section-admin { margin-top: 16px; border-top: 1px solid var(--border-soft); padding-top: 16px; }
+  .content-section-title { font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .content-item-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm); margin-bottom: 6px;
+    background: var(--bg);
+  }
+  .content-item-row input { flex: 1; border: none; background: transparent; font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; color: var(--text); }
+  .content-item-row .remove-btn { background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 16px; line-height: 1; padding: 0 2px; }
+  .content-item-row .remove-btn:hover { color: var(--red); }
+  .add-item-btn { background: none; border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 7px 12px; font-size: 12px; color: var(--text-2); cursor: pointer; width: 100%; font-family: 'DM Sans', sans-serif; transition: all .12s; }
+  .add-item-btn:hover { border-color: var(--text-2); color: var(--text); background: var(--bg); }
+
+  /* ─── EMPTY STATE ─── */
+  .empty { text-align: center; padding: 48px 24px; color: var(--text-3); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* ─── NOTIFICATION ─── */
+  .notif {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 12px 20px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; z-index: 9999;
+    transform: translateY(8px); opacity: 0;
+    transition: all .25s; pointer-events: none;
+    box-shadow: var(--shadow-md);
+  }
+  .notif.show { transform: translateY(0); opacity: 1; }
+  .notif.success { background: var(--green-bg); color: var(--green); border: 1px solid #b7e4c7; }
+  .notif.error { background: var(--red-bg); color: var(--red); border: 1px solid #f5c6cb; }
+
+  /* ─── TABS ─── */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-soft); margin-bottom: 24px; }
+  .tab { padding: 8px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--text-2); transition: all .12s; }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+  .tab:hover:not(.active) { color: var(--text); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp .35s ease both; }
+  .fade-up-1 { animation-delay: .05s; }
+  .fade-up-2 { animation-delay: .1s; }
+  .fade-up-3 { animation-delay: .15s; }
+  .fade-up-4 { animation-delay: .2s; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .sidebar { width: 100%; height: 56px; min-height: unset; flex-direction: row; align-items: center; padding: 0 12px; border-right: none; border-bottom: 1px solid var(--border); }
+    .main { margin-left: 0; margin-top: 56px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .sidebar-logo { display: none; }
+    .sidebar-section { display: none; }
+    .sidebar-spacer { display: none; }
+    .sidebar-user { padding: 0; border: none; margin: 0; }
+    .login-card { width: 95%; padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN PAGE ═══════════ -->
+<div id="page-login" class="page active">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="login-logo-dot"></span>
+      DoctorBrand <span>Co.</span>
+    </div>
+    <h1 class="login-title">Bem-vindo de volta</h1>
+    <p class="login-sub">Faça login para acessar sua área exclusiva</p>
+    <div class="field">
+      <label>Usuário</label>
+      <input type="text" id="login-user" placeholder="seu.usuario" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Usuário ou senha incorretos. Tente novamente.</div>
+    <div class="login-footer">DoctorBrand Co. · Área Restrita</div>
+  </div>
+</div>
+
+<!-- ═══════════ MEMBER PAGE ═══════════ -->
+<div id="page-member" class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="sidebar-logo-dot"></span> DoctorBrand
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Menu</div>
+      <div class="nav-item active" onclick="memberTab('home',this)" id="mtab-home">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Início
+      </div>
+      <div class="nav-item" onclick="memberTab('docs',this)" id="mtab-docs">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Documentos
+      </div>
+      <div class="nav-item" onclick="memberTab('videos',this)" id="mtab-videos">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Vídeos
+      </div>
+      <div class="nav-item" onclick="memberTab('tasks',this)" id="mtab-tasks">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Tarefas
+      </div>
+      <div class="nav-item" onclick="memberTab('dashboard',this)" id="mtab-dashboard">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+    </div>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-user">
+      <div class="user-chip">
+        <div class="user-avatar" id="member-avatar">M</div>
+        <div>
+          <div class="user-name" id="member-name">Membro</div>
+          <div class="user-role" id="member-role">Colaborador</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Sair</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="member-topbar-title">Início</span>
+      <span class="topbar-badge badge-member" id="member-topbar-badge">Membro</span>
+    </div>
+    <div class="content" id="member-content"></div>
+  </main>
+</div>
+
+<!-- ═══════════ ADMIN PAGE ═══════════ -->
+<div id="page-admin" class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="sidebar-logo-dot"></span> DoctorBrand
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Admin</div>
+      <div class="nav-item active" onclick="adminTab('members',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Membros
+      </div>
+      <div class="nav-item" onclick="adminTab('content',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Conteúdos
+      </div>
+      <div class="nav-item" onclick="adminTab('settings',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Configurações
+      </div>
+    </div>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-user">
+      <div class="user-chip">
+        <div class="user-avatar" style="background:#2d6a4f;">A</div>
+        <div>
+          <div class="user-name">Administrador</div>
+          <div class="user-role">DoctorBrand Co.</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Sair</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="admin-topbar-title">Gerenciar Membros</span>
+      <span class="topbar-badge badge-admin">Admin</span>
+    </div>
+    <div class="content" id="admin-content"></div>
+  </main>
+</div>
+
+<!-- ═══════════ MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOverlay(event)">
+  <div class="modal" id="modal-box">
+    <div id="modal-inner"></div>
+  </div>
+</div>
+
+<!-- ═══════════ NOTIFICATION ═══════════ -->
+<div class="notif" id="notif"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA STORE  (substitua por backend/JSON real depois)
+// ═══════════════════════════════════════════════════════
+
+let DB = JSON.parse(localStorage.getItem('db_doctorbrand') || 'null') || {
+  users: [
+    {
+      id: 'admin',
+      username: 'admin',
+      password: 'admin123',
+      name: 'Administrador',
+      role: 'admin',
+      permissions: ['docs','videos','tasks','dashboard'],
+      content: {}
+    },
+    {
+      id: 'u1',
+      username: 'ana.souza',
+      password: 'senha123',
+      name: 'Ana Souza',
+      role: 'member',
+      permissions: ['docs','videos','tasks'],
+      content: {
+        docs: [
+          { name: 'Guia de Identidade Visual', date: '28/03/2026', icon: '📄', url: '#' },
+          { name: 'Manual do Colaborador', date: '15/03/2026', icon: '📋', url: '#' }
+        ],
+        videos: [
+          { title: 'Onboarding DoctorBrand', duration: '12min', thumb: '🎬', url: '#' },
+          { title: 'Ferramentas Internas', duration: '8min', thumb: '🛠️', url: '#' }
+        ],
+        tasks: [
+          { text: 'Revisar identidade visual Q2', done: false, tag: 'Em andamento', tagClass: 'tag-yellow' },
+          { text: 'Entregar relatório mensal', done: true, tag: 'Concluído', tagClass: 'tag-green' },
+          { text: 'Participar da reunião de alinhamento', done: false, tag: 'Pendente', tagClass: 'tag-blue' }
+        ],
+        dashboard: {
+          stats: [
+            { label: 'Projetos Ativos', value: '4', change: '+1 este mês' },
+            { label: 'Tarefas Concluídas', value: '12', change: '85% de aprovação' },
+            { label: 'Documentos', value: '2', change: 'Atualizados' }
+          ]
+        }
+      }
+    },
+    {
+      id: 'u2',
+      username: 'carlos.lima',
+      password: 'senha456',
+      name: 'Carlos Lima',
+      role: 'member',
+      permissions: ['docs','dashboard'],
+      content: {
+        docs: [
+          { name: 'Proposta Comercial v3', date: '30/03/2026', icon: '📊', url: '#' }
+        ],
+        dashboard: {
+          stats: [
+            { label: 'Relatórios', value: '7', change: '3 novos' },
+            { label: 'Meta Mensal', value: '78%', change: 'Em progresso' }
+          ]
+        }
+      }
+    }
+  ],
+  globalContent: {
+    docs: [],
+    videos: [],
+    tasks: [],
+    dashboard: { stats: [] }
+  }
+};
+
+let currentUser = null;
+
+function saveDB() {
+  localStorage.setItem('db_doctorbrand', JSON.stringify(DB));
+}
+
+// ═══════════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('page-login').classList.contains('active')) doLogin();
+  }
+});
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  const user = DB.users.find(x => x.username === u && x.password === p);
+  if (!user) { err.classList.add('show'); return; }
+  err.classList.remove('show');
+  currentUser = user;
+  if (user.role === 'admin') showAdmin();
+  else showMember();
+}
+
+function doLogout() {
+  currentUser = null;
+  showPage('page-login');
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+}
+
+// ═══════════════════════════════════════════════════════
+//  PAGE ROUTER
+// ═══════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+//  MEMBER AREA
+// ═══════════════════════════════════════════════════════
+function showMember() {
+  showPage('page-member');
+  const u = currentUser;
+  document.getElementById('member-name').textContent = u.name;
+  document.getElementById('member-role').textContent = 'Colaborador';
+  document.getElementById('member-avatar').textContent = u.name[0];
+  document.getElementById('member-topbar-badge').textContent = u.name;
+
+  // show/hide nav tabs
+  ['docs','videos','tasks','dashboard'].forEach(t => {
+    const el = document.getElementById('mtab-' + t);
+    if (el) el.style.display = u.permissions.includes(t) ? '' : 'none';
+  });
+
+  memberTab('home', document.getElementById('mtab-home'));
+}
+
+function memberTab(tab, el) {
+  document.querySelectorAll('#page-member .nav-item').forEach(x => x.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = { home:'Início', docs:'Documentos', videos:'Vídeos', tasks:'Tarefas', dashboard:'Dashboard' };
+  document.getElementById('member-topbar-title').textContent = titles[tab] || tab;
+  const c = document.getElementById('member-content');
+  c.innerHTML = '';
+
+  const u = currentUser;
+  const data = u.content || {};
+
+  if (tab === 'home') {
+    c.innerHTML = `
+      <div class="fade-up">
+        <div style="margin-bottom:28px;">
+          <h2 style="font-size:22px;font-weight:600;letter-spacing:-.4px;font-family:'Instrument Serif',serif;">Olá, ${u.name.split(' ')[0]} 👋</h2>
+          <p style="color:var(--text-2);font-size:14px;margin-top:4px;">Seja bem-vindo(a) à sua área exclusiva DoctorBrand.</p>
+        </div>
+        <div class="grid-2" style="gap:16px;">
+          ${u.permissions.includes('docs') ? `<div class="content-block" style="cursor:pointer;" onclick="memberTab('docs',document.getElementById('mtab-docs'))">
+            <div class="content-block-header"><div class="content-block-icon" style="background:#f0f4ff;">📄</div><div><div class="content-block-title">Documentos</div><div class="content-block-meta">${(data.docs||[]).length} arquivos disponíveis</div></div></div>
+            <div class="content-block-body" style="font-size:13px;color:var(--text-2);">Acesse seus materiais e arquivos compartilhados.</div>
+          </div>` : ''}
+          ${u.permissions.includes('videos') ? `<div class="content-block" style="cursor:pointer;" onclick="memberTab('videos',document.getElementById('mtab-videos'))">
+            <div class="content-block-header"><div class="content-block-icon" style="background:#f0fff4;">🎬</div><div><div class="content-block-title">Vídeos</div><div class="content-block-meta">${(data.videos||[]).length} vídeos disponíveis</div></div></div>
+            <div class="content-block-body" style="font-size:13px;color:var(--text-2);">Assista aos conteúdos exclusivos preparados para você.</div>
+          </div>` : ''}
+          ${u.permissions.includes('tasks') ? `<div class="content-block" style="cursor:pointer;" onclick="memberTab('tasks',document.getElementById('mtab-tasks'))">
+            <div class="content-block-header"><div class="content-block-icon" style="background:#fffbf0;">✅</div><div><div class="content-block-title">Tarefas</div><div class="content-block-meta">${(data.tasks||[]).filter(t=>!t.done).length} pendentes</div></div></div>
+            <div class="content-block-body" style="font-size:13px;color:var(--text-2);">Acompanhe suas atividades e entregas.</div>
+          </div>` : ''}
+          ${u.permissions.includes('dashboard') ? `<div class="content-block" style="cursor:pointer;" onclick="memberTab('dashboard',document.getElementById('mtab-dashboard'))">
+            <div class="content-block-header"><div class="content-block-icon" style="background:#fff0f5;">📊</div><div><div class="content-block-title">Dashboard</div><div class="content-block-meta">Seus indicadores</div></div></div>
+            <div class="content-block-body" style="font-size:13px;color:var(--text-2);">Visualize seu progresso e métricas.</div>
+          </div>` : ''}
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (tab === 'docs' && u.permissions.includes('docs')) {
+    const docs = data.docs || [];
+    c.innerHTML = `<div class="fade-up">
+      <div class="section-header"><h2>Documentos</h2></div>
+      <div class="content-block">
+        ${docs.length === 0 ? '<div class="empty"><div class="empty-icon">📁</div><p>Nenhum documento disponível ainda.</p></div>' :
+          docs.map(d => `<div class="doc-item" onclick="window.open('${d.url}','_blank')">
+            <span class="doc-icon">${d.icon || '📄'}</span>
+            <div><div class="doc-name">${d.name}</div><div class="doc-date">${d.date}</div></div>
+            <span class="doc-arrow">→</span>
+          </div>`).join('')}
+      </div></div>`;
+    return;
+  }
+
+  if (tab === 'videos' && u.permissions.includes('videos')) {
+    const vids = data.videos || [];
+    c.innerHTML = `<div class="fade-up">
+      <div class="section-header"><h2>Vídeos</h2></div>
+      ${vids.length === 0 ? '<div class="empty"><div class="empty-icon">🎬</div><p>Nenhum vídeo disponível ainda.</p></div>' :
+        `<div class="grid-2">${vids.map(v => `
+          <div class="video-card" onclick="window.open('${v.url}','_blank')">
+            <div class="video-thumb"><span>${v.thumb || '🎬'}</span><div class="video-play">▶</div></div>
+            <div class="video-info"><div class="video-title">${v.title}</div><div class="video-meta">${v.duration}</div></div>
+          </div>`).join('')}</div>`}
+      </div>`;
+    return;
+  }
+
+  if (tab === 'tasks' && u.permissions.includes('tasks')) {
+    const tasks = data.tasks || [];
+    const done = tasks.filter(t => t.done).length;
+    const pct = tasks.length ? Math.round(done/tasks.length*100) : 0;
+    c.innerHTML = `<div class="fade-up">
+      <div class="section-header"><h2>Tarefas</h2><span style="font-size:13px;color:var(--text-2);">${done}/${tasks.length} concluídas</span></div>
+      <div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="flex:1;height:6px;background:var(--border-soft);border-radius:99px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:var(--green);border-radius:99px;transition:width .4s;"></div>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:var(--green);">${pct}%</span>
+        </div>
+      </div>
+      <div class="content-block">
+        ${tasks.length === 0 ? '<div class="empty"><div class="empty-icon">✅</div><p>Nenhuma tarefa no momento.</p></div>' :
+          tasks.map((t, i) => `
+          <div class="task-item">
+            <div class="task-check ${t.done ? 'done' : ''}" onclick="toggleTask(${i})"></div>
+            <span class="task-text ${t.done ? 'done' : ''}">${t.text}</span>
+            <span class="task-tag ${t.tagClass}">${t.tag}</span>
+          </div>`).join('')}
+      </div></div>`;
+    return;
+  }
+
+  if (tab === 'dashboard' && u.permissions.includes('dashboard')) {
+    const dash = data.dashboard || {};
+    const stats = dash.stats || [];
+    c.innerHTML = `<div class="fade-up">
+      <div class="section-header"><h2>Dashboard</h2></div>
+      <div class="grid-${Math.min(stats.length, 3) || 1}" style="margin-bottom:20px;">
+        ${stats.length === 0 ? '<div class="empty"><div class="empty-icon">📊</div><p>Nenhum indicador configurado.</p></div>' :
+          stats.map((s, i) => `<div class="stat-card fade-up fade-up-${i+1}">
+            <div class="stat-label">${s.label}</div>
+            <div class="stat-value">${s.value}</div>
+            <div class="stat-change">${s.change}</div>
+          </div>`).join('')}
+      </div></div>`;
+    return;
+  }
+
+  // permission denied
+  c.innerHTML = `<div class="empty"><div class="empty-icon">🔒</div><p>Você não tem acesso a esta seção.</p></div>`;
+}
+
+function toggleTask(idx) {
+  const tasks = currentUser.content.tasks;
+  if (!tasks) return;
+  tasks[idx].done = !tasks[idx].done;
+  // update in DB
+  const u = DB.users.find(x => x.id === currentUser.id);
+  if (u) { u.content.tasks[idx].done = tasks[idx].done; saveDB(); }
+  memberTab('tasks', document.getElementById('mtab-tasks'));
+}
+
+// ═══════════════════════════════════════════════════════
+//  ADMIN AREA
+// ═══════════════════════════════════════════════════════
+function showAdmin() {
+  showPage('page-admin');
+  adminTab('members', document.querySelector('#page-admin .nav-item'));
+}
+
+function adminTab(tab, el) {
+  document.querySelectorAll('#page-admin .nav-item').forEach(x => x.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = { members:'Gerenciar Membros', content:'Biblioteca de Conteúdos', settings:'Configurações' };
+  document.getElementById('admin-topbar-title').textContent = titles[tab];
+  const c = document.getElementById('admin-content');
+  c.innerHTML = '';
+
+  if (tab === 'members') renderAdminMembers(c);
+  if (tab === 'content') renderAdminContent(c);
+  if (tab === 'settings') renderAdminSettings(c);
+}
+
+// ── MEMBERS ──
+function renderAdminMembers(c) {
+  const members = DB.users.filter(u => u.role !== 'admin');
+  c.innerHTML = `
+    <div class="fade-up">
+      <div class="section-header">
+        <h2>Membros <span style="font-size:13px;font-weight:400;color:var(--text-2);margin-left:6px;">${members.length} colaboradores</span></h2>
+        <button class="btn btn-dark" onclick="openAddMember()">+ Novo Membro</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Membro</th>
+                <th>Usuário</th>
+                <th>Permissões</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${members.length === 0 ? `<tr><td colspan="4"><div class="empty"><div class="empty-icon">👤</div><p>Nenhum membro cadastrado</p></div></td></tr>` :
+                members.map(m => `
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div class="user-avatar" style="width:32px;height:32px;font-size:13px;">${m.name[0]}</div>
+                      <div>
+                        <div style="font-weight:500;">${m.name}</div>
+                        <div style="font-size:11px;color:var(--text-3);">ID: ${m.id}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><code style="font-size:12px;background:var(--bg);padding:2px 8px;border-radius:4px;border:1px solid var(--border);">${m.username}</code></td>
+                  <td>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                      ${m.permissions.map(p => `<span class="task-tag ${permTag(p)}">${permName(p)}</span>`).join('')}
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display:flex;gap:6px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openEditMember('${m.id}')">Editar</button>
+                      <button class="btn btn-danger btn-sm" onclick="deleteMember('${m.id}')">Excluir</button>
+                    </div>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function permTag(p) { return {docs:'tag-blue',videos:'tag-yellow',tasks:'tag-green',dashboard:'tag-gray'}[p]||'tag-gray'; }
+function permName(p) { return {docs:'Docs',videos:'Vídeos',tasks:'Tarefas',dashboard:'Dashboard'}[p]||p; }
+
+function openAddMember() {
+  const inner = document.getElementById('modal-inner');
+  inner.innerHTML = `
+    <div class="modal-title">Novo Membro</div>
+    <div class="modal-sub">Preencha os dados do novo colaborador</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nome completo</label><input class="form-input" id="m-name" placeholder="Ana Souza"></div>
+      <div class="form-group"><label class="form-label">Usuário</label><input class="form-input" id="m-user" placeholder="ana.souza"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Senha</label><input class="form-input" id="m-pass" type="password" placeholder="••••••••"></div>
+      <div class="form-group"><label class="form-label">Cargo/Função</label><input class="form-input" id="m-role-label" placeholder="Designer"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Permissões de acesso</label>
+      <div class="perm-grid">
+        <label class="perm-item"><input type="checkbox" value="docs" onchange="togglePerm(this)"> 📄 Documentos</label>
+        <label class="perm-item"><input type="checkbox" value="videos" onchange="togglePerm(this)"> 🎬 Vídeos</label>
+        <label class="perm-item"><input type="checkbox" value="tasks" onchange="togglePerm(this)"> ✅ Tarefas</label>
+        <label class="perm-item"><input type="checkbox" value="dashboard" onchange="togglePerm(this)"> 📊 Dashboard</label>
+      </div>
+    </div>
+    ${contentEditorHTML({})}
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-dark" onclick="saveMember()">Criar Membro</button>
+    </div>`;
+  openModal();
+}
+
+function togglePerm(cb) {
+  cb.closest('.perm-item').classList.toggle('selected', cb.checked);
+}
+
+function openEditMember(id) {
+  const m = DB.users.find(u => u.id === id);
+  if (!m) return;
+  const inner = document.getElementById('modal-inner');
+  inner.innerHTML = `
+    <input type="hidden" id="edit-id" value="${id}">
+    <div class="modal-title">Editar Membro</div>
+    <div class="modal-sub">Atualize os dados e permissões de <strong>${m.name}</strong></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nome completo</label><input class="form-input" id="m-name" value="${m.name}"></div>
+      <div class="form-group"><label class="form-label">Usuário</label><input class="form-input" id="m-user" value="${m.username}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nova Senha (deixe em branco para manter)</label><input class="form-input" id="m-pass" type="password" placeholder="••••••••"></div>
+      <div class="form-group"><label class="form-label">Cargo/Função</label><input class="form-input" id="m-role-label" value="${m.roleLabel||'Colaborador'}"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Permissões de acesso</label>
+      <div class="perm-grid">
+        ${['docs','videos','tasks','dashboard'].map(p => `
+        <label class="perm-item ${m.permissions.includes(p)?'selected':''}">
+          <input type="checkbox" value="${p}" ${m.permissions.includes(p)?'checked':''} onchange="togglePerm(this)">
+          ${permIcon(p)} ${permName(p)}
+        </label>`).join('')}
+      </div>
+    </div>
+    ${contentEditorHTML(m.content || {})}
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-dark" onclick="updateMember()">Salvar Alterações</button>
+    </div>`;
+  openModal();
+}
+
+function permIcon(p) { return {docs:'📄',videos:'🎬',tasks:'✅',dashboard:'📊'}[p]||''; }
+
+function contentEditorHTML(content) {
+  const docs = content.docs || [];
+  const videos = content.videos || [];
+  const tasks = content.tasks || [];
+  const stats = (content.dashboard||{}).stats || [];
+
+  return `
+  <div class="content-section-admin">
+    <div class="tabs">
+      <div class="tab active" onclick="cTab(this,'ct-docs')">📄 Docs</div>
+      <div class="tab" onclick="cTab(this,'ct-videos')">🎬 Vídeos</div>
+      <div class="tab" onclick="cTab(this,'ct-tasks')">✅ Tarefas</div>
+      <div class="tab" onclick="cTab(this,'ct-stats')">📊 Dashboard</div>
+    </div>
+    <div class="tab-panel active" id="ct-docs">
+      <div id="list-docs">
+        ${docs.map((d,i)=>`<div class="content-item-row"><input placeholder="Nome do documento" value="${d.name}"><input placeholder="Link/URL" value="${d.url||'#'}" style="max-width:180px;"><input placeholder="📄" value="${d.icon||'📄'}" style="max-width:48px;"><button class="remove-btn" onclick="removeItem('list-docs',this)">×</button></div>`).join('')}
+      </div>
+      <button class="add-item-btn" onclick="addItem('list-docs','doc')">+ Adicionar documento</button>
+    </div>
+    <div class="tab-panel" id="ct-videos">
+      <div id="list-videos">
+        ${videos.map((v,i)=>`<div class="content-item-row"><input placeholder="Título do vídeo" value="${v.title}"><input placeholder="Link" value="${v.url||'#'}" style="max-width:180px;"><input placeholder="Duração" value="${v.duration||''}" style="max-width:80px;"><button class="remove-btn" onclick="removeItem('list-videos',this)">×</button></div>`).join('')}
+      </div>
+      <button class="add-item-btn" onclick="addItem('list-videos','video')">+ Adicionar vídeo</button>
+    </div>
+    <div class="tab-panel" id="ct-tasks">
+      <div id="list-tasks">
+        ${tasks.map((t,i)=>`<div class="content-item-row"><input placeholder="Descrição da tarefa" value="${t.text}"><input placeholder="Tag" value="${t.tag||''}" style="max-width:120px;"><button class="remove-btn" onclick="removeItem('list-tasks',this)">×</button></div>`).join('')}
+      </div>
+      <button class="add-item-btn" onclick="addItem('list-tasks','task')">+ Adicionar tarefa</button>
+    </div>
+    <div class="tab-panel" id="ct-stats">
+      <div id="list-stats">
+        ${stats.map((s,i)=>`<div class="content-item-row"><input placeholder="Label" value="${s.label}" style="max-width:160px;"><input placeholder="Valor" value="${s.value}" style="max-width:80px;"><input placeholder="Detalhe" value="${s.change||''}"><button class="remove-btn" onclick="removeItem('list-stats',this)">×</button></div>`).join('')}
+      </div>
+      <button class="add-item-btn" onclick="addItem('list-stats','stat')">+ Adicionar indicador</button>
+    </div>
+  </div>`;
+}
+
+function cTab(el, panel) {
+  const modal = document.getElementById('modal-box');
+  modal.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  modal.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  modal.querySelector('#' + panel).classList.add('active');
+}
+
+function addItem(listId, type) {
+  const list = document.getElementById(listId);
+  const row = document.createElement('div');
+  row.className = 'content-item-row';
+  if (type === 'doc') row.innerHTML = `<input placeholder="Nome do documento"><input placeholder="Link/URL" value="#" style="max-width:180px;"><input placeholder="📄" value="📄" style="max-width:48px;"><button class="remove-btn" onclick="removeItem('${listId}',this)">×</button>`;
+  if (type === 'video') row.innerHTML = `<input placeholder="Título do vídeo"><input placeholder="Link" value="#" style="max-width:180px;"><input placeholder="Duração" style="max-width:80px;"><button class="remove-btn" onclick="removeItem('${listId}',this)">×</button>`;
+  if (type === 'task') row.innerHTML = `<input placeholder="Descrição da tarefa"><input placeholder="Tag" style="max-width:120px;"><button class="remove-btn" onclick="removeItem('${listId}',this)">×</button>`;
+  if (type === 'stat') row.innerHTML = `<input placeholder="Label" style="max-width:160px;"><input placeholder="Valor" style="max-width:80px;"><input placeholder="Detalhe"><button class="remove-btn" onclick="removeItem('${listId}',this)">×</button>`;
+  list.appendChild(row);
+}
+
+function removeItem(listId, btn) {
+  btn.closest('.content-item-row').remove();
+}
+
+function collectContent() {
+  const docs = [...document.querySelectorAll('#list-docs .content-item-row')].map(r => {
+    const ins = r.querySelectorAll('input');
+    return { name: ins[0].value, url: ins[1].value || '#', icon: ins[2].value || '📄', date: new Date().toLocaleDateString('pt-BR') };
+  });
+  const videos = [...document.querySelectorAll('#list-videos .content-item-row')].map(r => {
+    const ins = r.querySelectorAll('input');
+    return { title: ins[0].value, url: ins[1].value || '#', duration: ins[2].value || '', thumb: '🎬' };
+  });
+  const tasks = [...document.querySelectorAll('#list-tasks .content-item-row')].map(r => {
+    const ins = r.querySelectorAll('input');
+    const tag = ins[1].value || 'Pendente';
+    return { text: ins[0].value, done: false, tag, tagClass: 'tag-blue' };
+  });
+  const stats = [...document.querySelectorAll('#list-stats .content-item-row')].map(r => {
+    const ins = r.querySelectorAll('input');
+    return { label: ins[0].value, value: ins[1].value, change: ins[2].value };
+  });
+  return { docs, videos, tasks, dashboard: { stats } };
+}
+
+function saveMember() {
+  const name = document.getElementById('m-name').value.trim();
+  const username = document.getElementById('m-user').value.trim();
+  const password = document.getElementById('m-pass').value;
+  const roleLabel = document.getElementById('m-role-label').value.trim() || 'Colaborador';
+  if (!name || !username || !password) { showNotif('Preencha nome, usuário e senha', 'error'); return; }
+  if (DB.users.find(u => u.username === username)) { showNotif('Usuário já existe', 'error'); return; }
+  const permissions = [...document.querySelectorAll('.perm-item input:checked')].map(i => i.value);
+  const content = collectContent();
+  const id = 'u' + Date.now();
+  DB.users.push({ id, username, password, name, role: 'member', roleLabel, permissions, content });
+  saveDB();
+  closeModal();
+  adminTab('members', document.querySelector('#page-admin .nav-item'));
+  showNotif(`Membro "${name}" criado com sucesso!`, 'success');
+}
+
+function updateMember() {
+  const id = document.getElementById('edit-id').value;
+  const m = DB.users.find(u => u.id === id);
+  if (!m) return;
+  m.name = document.getElementById('m-name').value.trim() || m.name;
+  m.username = document.getElementById('m-user').value.trim() || m.username;
+  const np = document.getElementById('m-pass').value;
+  if (np) m.password = np;
+  m.roleLabel = document.getElementById('m-role-label').value.trim() || 'Colaborador';
+  m.permissions = [...document.querySelectorAll('.perm-item input:checked')].map(i => i.value);
+  m.content = collectContent();
+  saveDB();
+  closeModal();
+  adminTab('members', document.querySelector('#page-admin .nav-item'));
+  showNotif('Membro atualizado com sucesso!', 'success');
+}
+
+function deleteMember(id) {
+  if (!confirm('Excluir este membro? Esta ação não pode ser desfeita.')) return;
+  DB.users = DB.users.filter(u => u.id !== id);
+  saveDB();
+  adminTab('members', document.querySelector('#page-admin .nav-item'));
+  showNotif('Membro removido.', 'success');
+}
+
+// ── CONTENT TAB ──
+function renderAdminContent(c) {
+  c.innerHTML = `
+    <div class="fade-up">
+      <div class="section-header"><h2>Biblioteca de Conteúdos</h2></div>
+      <div class="card">
+        <div class="card-title">Visão geral</div>
+        <div class="card-sub">Gerencie os conteúdos diretamente em cada membro através do painel de membros.</div>
+        <div class="grid-4">
+          <div class="stat-card">
+            <div class="stat-label">Membros</div>
+            <div class="stat-value">${DB.users.filter(u=>u.role!=='admin').length}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Documentos</div>
+            <div class="stat-value">${DB.users.reduce((acc,u)=>acc+(u.content?.docs?.length||0),0)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Vídeos</div>
+            <div class="stat-value">${DB.users.reduce((acc,u)=>acc+(u.content?.videos?.length||0),0)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tarefas</div>
+            <div class="stat-value">${DB.users.reduce((acc,u)=>acc+(u.content?.tasks?.length||0),0)}</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Conteúdo por membro</div>
+        <div class="card-sub">Clique em "Editar" para gerenciar os conteúdos de cada colaborador.</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Membro</th><th>Docs</th><th>Vídeos</th><th>Tarefas</th><th>Dashboard</th><th></th></tr></thead>
+          <tbody>
+            ${DB.users.filter(u=>u.role!=='admin').map(m=>`
+            <tr>
+              <td><strong>${m.name}</strong></td>
+              <td>${m.content?.docs?.length||0}</td>
+              <td>${m.content?.videos?.length||0}</td>
+              <td>${m.content?.tasks?.length||0}</td>
+              <td>${m.content?.dashboard?.stats?.length||0} indicadores</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="openEditMember('${m.id}')">Editar conteúdo</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </div>
+    </div>`;
+}
+
+// ── SETTINGS TAB ──
+function renderAdminSettings(c) {
+  c.innerHTML = `
+    <div class="fade-up">
+      <div class="section-header"><h2>Configurações</h2></div>
+      <div class="card">
+        <div class="card-title">Senha do Administrador</div>
+        <div class="card-sub">Altere a senha de acesso do administrador</div>
+        <div class="form-row" style="max-width:400px;">
+          <div class="form-group"><label class="form-label">Nova senha</label><input class="form-input" id="new-admin-pass" type="password" placeholder="••••••••"></div>
+          <div class="form-group"><label class="form-label">Confirmar senha</label><input class="form-input" id="confirm-admin-pass" type="password" placeholder="••••••••"></div>
+        </div>
+        <button class="btn btn-dark" onclick="changeAdminPass()">Salvar Senha</button>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--red);">Zona de Perigo</div>
+        <div class="card-sub">Ações irreversíveis de reset do sistema</div>
+        <button class="btn btn-danger" onclick="resetDB()">Resetar todos os dados</button>
+      </div>
+    </div>`;
+}
+
+function changeAdminPass() {
+  const p1 = document.getElementById('new-admin-pass').value;
+  const p2 = document.getElementById('confirm-admin-pass').value;
+  if (!p1) { showNotif('Digite a nova senha', 'error'); return; }
+  if (p1 !== p2) { showNotif('Senhas não conferem', 'error'); return; }
+  const admin = DB.users.find(u => u.role === 'admin');
+  if (admin) { admin.password = p1; saveDB(); showNotif('Senha alterada!', 'success'); }
+}
+
+function resetDB() {
+  if (!confirm('Isso apagará todos os membros e conteúdos. Continuar?')) return;
+  localStorage.removeItem('db_doctorbrand');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════════════
+//  MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+function openModal() { document.getElementById('modal-overlay').classList.add('open'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalOverlay(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+// ═══════════════════════════════════════════════════════
+//  NOTIFICATION
+// ═══════════════════════════════════════════════════════
+function showNotif(msg, type = 'success') {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.className = `notif ${type} show`;
+  setTimeout(() => n.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
