@@ -1272,9 +1272,9 @@ function saveGeminiKey(key){ localStorage.setItem('gemini_api_key', key.trim());
 async function generateContentWithGemini(prompt){
  const apiKey = getGeminiKey();
  if(!apiKey) throw new Error('API Key do Gemini não configurada. Insira sua chave no campo acima.');
- // Endpoint Gemini 2.0 Flash — modelo atual e estável
+ // Endpoint Gemini 2.5 Flash — modelo estável atual (Abril 2026)
  // Referência: https://ai.google.dev/gemini-api/docs/models
- const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+ const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
  const body = {
  contents: [{ parts: [{ text: prompt }] }],
  generationConfig: {
@@ -1462,7 +1462,7 @@ function rAI(c){
  Gerar com Gemini
  </button>
  <div style="margin-top:10px;font-size:11px;color:var(--text-3);text-align:center;">
- Powered by Google Gemini 2.0 Flash
+ Powered by Google Gemini 2.5 Flash
  </div>
  </div>
  <div class="ai-result-card" id="ai-result">
