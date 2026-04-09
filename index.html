@@ -596,6 +596,7 @@ tr:hover td { background: var(--surface-2); }
       <div class="nav-item" id="mn-calendar" onclick="mTab('calendar',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Calendário</div>
       <div class="nav-item" id="mn-instagram" onclick="mTab('instagram',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Instagram</div>
       <div class="nav-item" id="mn-metrics" onclick="mTab('metrics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Métricas</div>
+      <div class="nav-item" id="mn-briefing" onclick="mTab('briefing',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Briefing</div>
     </div>
     <div class="sb-spacer"></div>
     <div class="sb-user">
@@ -625,6 +626,7 @@ tr:hover td { background: var(--surface-2); }
       <div class="sb-label">Colaborador</div>
       <div class="nav-item active" id="cn-revisions" onclick="cTab('revisions',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Revisões Pendentes<span class="nav-badge" id="c-rev-badge">0</span></div>
       <div class="nav-item" id="cn-done" onclick="cTab('done',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Revisões Concluídas</div>
+      <div class="nav-item" id="cn-briefings" onclick="cTab('briefings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Briefings dos Clientes</div>
     </div>
     <div class="sb-spacer"></div>
     <div class="sb-user">
@@ -657,6 +659,7 @@ tr:hover td { background: var(--surface-2); }
       <div class="nav-item" onclick="hTab('posts',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Todos os Posts</div>
       <div class="nav-item" onclick="hTab('analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</div>
       <div class="nav-item" onclick="hTab('settings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Configurações</div>
+      <div class="nav-item" onclick="hTab('briefings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Briefings</div>
     </div>
     <div class="sb-spacer"></div>
     <div class="sb-user">
@@ -786,7 +789,7 @@ function mTab(tab, el){
   closeSb('member');
   document.querySelectorAll('#page-member .nav-item').forEach(x=>x.classList.remove('active'));
   if(el) el.classList.add('active');
-  const titles={home:'Início',planning:'Planejamento de Conteúdo',scheduling:'Agendamento de Posts',ai:'IA de Conteúdo',calendar:'Calendário',instagram:'Conexão Instagram',metrics:'Métricas'};
+  const titles={home:'Início',planning:'Planejamento de Conteúdo',scheduling:'Agendamento de Posts',ai:'IA de Conteúdo',calendar:'Calendário',instagram:'Conexão Instagram',metrics:'Métricas',briefing:'Briefing da Marca'};
   document.getElementById('m-tb-title').textContent = titles[tab]||tab;
   const c = document.getElementById('m-content');
   c.innerHTML='';
@@ -797,6 +800,7 @@ function mTab(tab, el){
   else if(tab==='calendar') rCalendar(c);
   else if(tab==='instagram') rInstagram(c);
   else if(tab==='metrics') rMetrics(c);
+  else if(tab==='briefing') rBriefing(c);
 }
 
 // ─── HOME ───
@@ -1138,74 +1142,466 @@ function unschedulePost(id){
   if(p){p.scheduledAt='';p.scheduledTime='';saveDB();mTab('scheduling',document.getElementById('mn-scheduling'));showNotif('Agendamento removido','info');updateSchedBadge();}
 }
 
-// ─── AI ───
-let aiRunning=false;
-function rAI(c){
-  c.innerHTML=`
-  <div class="fade-up">
-    <div class="sh"><h2>IA de Conteúdo</h2><span class="tag tag-gold">⚡ Claude AI</span></div>
-    <div class="ai-panel">
-      <div class="ai-form-card">
-        <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--cream);margin-bottom:16px;">Gerar conteúdo médico</div>
-        ${[['ai-spec','Especialidade médica','select',['Dermatologia','Cardiologia','Ortopedia','Ginecologia','Neurologia','Pediatria','Endocrinologia','Oftalmologia']],['ai-goal','Objetivo','select',['🎓 Educação do paciente','🏆 Autoridade','💼 Conversão','❤️ Humanização','🔥 Engajamento']],['ai-type','Tipo de post','select',['carrossel','reels','imagem']],['ai-aud','Público-alvo','select',['Pacientes em geral','Jovens 18-30','Adultos 30-50','Terceira idade','Mães e gestantes']],['ai-tone','Tom','select',['Educativo e acessível','Científico e técnico','Empático e acolhedor','Descontraído e próximo']]].map(([id,lbl,type,opts])=>`
-        <div class="form-group"><label class="form-label">${lbl}</label><div class="select-wrap"><select class="form-select" id="${id}">${opts.map(o=>`<option>${o}</option>`).join('')}</select></div></div>`).join('')}
-        <div class="form-group"><label class="form-label">Tema específico (opcional)</label><input class="form-input" id="ai-topic" placeholder="Ex: acne no verão..."></div>
-        <button class="btn btn-cream" style="width:100%;" onclick="runAI()" id="ai-btn">✨ Gerar com IA</button>
-      </div>
-      <div class="ai-result-card" id="ai-result">
-        <div class="empty"><div class="empty-icon">✨</div><p>Configure os parâmetros e clique em <strong>Gerar com IA</strong>.</p></div>
-      </div>
-    </div>
-  </div>`;
-  document.getElementById('ai-spec').value = CU.specialty||document.getElementById('ai-spec').value;
+// ─── AI — GEMINI INTEGRATION ───
+// ══════════════════════════════════════════════════════════
+//  GEMINI API MODULE
+//  Responsável por toda comunicação com Google Gemini
+// ══════════════════════════════════════════════════════════
+
+/** Recupera a API key do Gemini salva no localStorage */
+function getGeminiKey(){ return localStorage.getItem('gemini_api_key') || ''; }
+
+/** Salva a API key do Gemini no localStorage */
+function saveGeminiKey(key){ localStorage.setItem('gemini_api_key', key.trim()); }
+
+/**
+ * generateContentWithGemini(prompt)
+ * Função principal de integração com a API do Google Gemini.
+ * @param {string} prompt - Prompt completo já estruturado
+ * @returns {Promise<string>} - Texto gerado pelo modelo
+ */
+async function generateContentWithGemini(prompt){
+  const apiKey = getGeminiKey();
+  if(!apiKey) throw new Error('API Key do Gemini não configurada. Insira sua chave no campo acima.');
+
+  // Endpoint Gemini 1.5 Flash — rápido, eficiente e gratuito na tier atual
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.8,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 1500
+    },
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+    ]
+  };
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if(!res.ok){
+    const errData = await res.json().catch(()=>({}));
+    const msg = errData?.error?.message || `Erro HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!text) throw new Error('Resposta vazia do Gemini. Tente novamente.');
+  return text;
 }
 
+/**
+ * buildGeminiPrompt(params, briefing)
+ * Monta o prompt estruturado com contexto de marca, briefing e parâmetros do post.
+ * @param {Object} params - Parâmetros do formulário AI
+ * @param {Object|null} briefing - Briefing salvo do usuário (pode ser null)
+ * @returns {string}
+ */
+function buildGeminiPrompt(params, briefing){
+  const { spec, goal, type, aud, tone, topic } = params;
+
+  // Contexto de marca vindo do briefing (se existir)
+  const brandCtx = briefing ? `
+## CONTEXTO DA MARCA (BRIEFING DO CLIENTE)
+- Marca: ${briefing.brandName || spec}
+- Especialidade: ${briefing.specialty || spec}
+- Público-alvo: ${briefing.audience || aud}
+- Tom de voz definido: ${briefing.toneOfVoice || tone}
+- Objetivo estratégico: ${briefing.contentGoal || goal}
+- Diferenciais: ${briefing.differentials || 'Não informado'}
+- Observações: ${briefing.observations || 'Nenhuma'}
+` : `
+## CONTEXTO DA MARCA
+- Especialidade médica: ${spec}
+- Público-alvo: ${aud}
+- Tom de voz: ${tone}
+`;
+
+  return `Você é um especialista sênior em marketing médico digital para a plataforma DoctorBrand Co.
+Sua missão é criar conteúdo ético, educativo e de alta qualidade para Instagram médico.
+
+${brandCtx}
+
+## PARÂMETROS DO POST
+- Objetivo do conteúdo: ${goal}
+- Tipo de post: ${type}
+- Tom de comunicação: ${tone}
+- Tema específico: ${topic || 'Escolha o tema mais relevante para a especialidade'}
+
+## REGRAS ÉTICAS OBRIGATÓRIAS (CFM)
+- Nunca faça promessas de cura ou resultados garantidos
+- Não compare médicos ou clínicas entre si
+- Incentive sempre a consulta médica presencial
+- Linguagem acessível mas embasada cientificamente
+- Não use superlativos de qualidade ("o melhor", "o único")
+
+## FORMATO DE RESPOSTA
+Responda SOMENTE em JSON válido, sem markdown, sem explicações fora do JSON:
+{
+  "titulo": "título do post (máximo 60 caracteres, impactante)",
+  "tema": "tema/assunto principal",
+  "ideia": "briefing criativo para o designer (2-3 frases sobre visual, cores, composição)",
+  "legenda": "legenda completa para Instagram com emojis, quebras de linha e hashtags (entre 400 e 700 caracteres)",
+  "hashtags": ["tag1","tag2","tag3","tag4","tag5","tag6"],
+  "cta": "chamada para ação clara e específica",
+  "slides": ["Slide 1 título","Slide 2 título","Slide 3 título","Slide 4 título","Slide 5 título"],
+  "nota_etica": "observação sobre conformidade ética e CFM deste conteúdo"
+}`;
+}
+
+// ── Render AI Tab ──
+let aiRunning = false;
+
+function rAI(c){
+  const savedKey = getGeminiKey();
+  const briefing = loadBriefing(CU.id);
+  const hasBriefing = briefing && briefing.brandName;
+
+  c.innerHTML=`
+  <div class="fade-up">
+    <div class="sh">
+      <h2>IA de Conteúdo</h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="tag tag-gold">⚡ Google Gemini</span>
+        ${hasBriefing ? `<span class="tag tag-green" title="Briefing da marca será usado como contexto">📋 Briefing ativo</span>` : `<span class="tag tag-gray" title="Preencha o Briefing para melhorar a geração">📋 Sem briefing</span>`}
+      </div>
+    </div>
+
+    <!-- API KEY CONFIGURATION -->
+    <div style="background:var(--gold-soft);border:1px solid rgba(201,169,110,.25);border-radius:var(--r);padding:16px 18px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">🔑 Google Gemini API Key</div>
+          <div style="font-size:12px;color:var(--text-2);">Necessária para geração de conteúdo. Obtenha em <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--gold);text-decoration:underline;">aistudio.google.com</a></div>
+        </div>
+        <span class="tag ${savedKey ? 'tag-green' : 'tag-red'}">${savedKey ? '✓ Configurada' : '✗ Não configurada'}</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;">
+        <input type="password" class="form-input" id="gemini-key-input"
+          placeholder="AIzaSy..."
+          value="${savedKey ? '••••••••••••••••••••' : ''}"
+          style="flex:1;font-family:monospace;font-size:13px;"
+          onfocus="if(this.value.startsWith('••')) this.value=''"
+        >
+        <button class="btn btn-gold btn-sm" onclick="handleSaveGeminiKey()">Salvar chave</button>
+        ${savedKey ? `<button class="btn btn-ghost btn-sm" onclick="handleClearGeminiKey()">Remover</button>` : ''}
+      </div>
+    </div>
+
+    ${hasBriefing ? `
+    <div style="background:var(--green-bg);border:1px solid rgba(74,140,106,.2);border-radius:var(--r);padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">📋</span>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:600;color:var(--green);">Briefing da marca será usado como contexto</div>
+        <div style="font-size:11px;color:var(--text-2);margin-top:2px;">${briefing.brandName} · ${briefing.specialty} · Tom: ${briefing.toneOfVoice}</div>
+      </div>
+      <button class="btn btn-ghost btn-xs" onclick="mTab('briefing',document.getElementById('mn-briefing'))">Editar →</button>
+    </div>` : `
+    <div style="background:var(--surface-2);border:1px dashed var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">💡</span>
+      <div style="flex:1;font-size:12px;color:var(--text-2);">Preencha o <strong style="color:var(--cream);">Briefing da Marca</strong> para que a IA use o contexto do seu consultório na geração.</div>
+      <button class="btn btn-ghost btn-xs" onclick="mTab('briefing',document.getElementById('mn-briefing'))">Preencher →</button>
+    </div>`}
+
+    <div class="ai-panel">
+      <div class="ai-form-card">
+        <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--cream);margin-bottom:16px;">Parâmetros do conteúdo</div>
+        <div class="form-group">
+          <label class="form-label">Especialidade médica</label>
+          <div class="select-wrap"><select class="form-select" id="ai-spec">
+            ${['Dermatologia','Cardiologia','Ortopedia','Ginecologia','Neurologia','Pediatria','Endocrinologia','Oftalmologia','Psiquiatria','Urologia','Nutrologia','Cirurgia Plástica'].map(o=>`<option>${o}</option>`).join('')}
+          </select></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Objetivo do conteúdo</label>
+          <div class="select-wrap"><select class="form-select" id="ai-goal">
+            <option value="educacao">🎓 Educação do paciente</option>
+            <option value="autoridade">🏆 Construção de autoridade</option>
+            <option value="conversao">💼 Conversão / captação</option>
+            <option value="humanizacao">❤️ Humanização</option>
+            <option value="engajamento">🔥 Engajamento</option>
+          </select></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de post</label>
+          <div class="select-wrap"><select class="form-select" id="ai-type">
+            <option value="carrossel">🎠 Carrossel</option>
+            <option value="reels">🎬 Reels (roteiro)</option>
+            <option value="imagem">🖼️ Imagem única</option>
+          </select></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Público-alvo</label>
+          <div class="select-wrap"><select class="form-select" id="ai-aud">
+            <option>Pacientes em geral</option>
+            <option>Jovens (18-30 anos)</option>
+            <option>Adultos (30-50 anos)</option>
+            <option>Terceira idade</option>
+            <option>Mães e gestantes</option>
+            <option>Profissionais da saúde</option>
+          </select></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tom de comunicação</label>
+          <div class="select-wrap"><select class="form-select" id="ai-tone">
+            <option>Educativo e acessível</option>
+            <option>Científico e técnico</option>
+            <option>Empático e acolhedor</option>
+            <option>Descontraído e próximo</option>
+            <option>Inspirador e motivacional</option>
+          </select></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tema específico <span style="color:var(--text-3);font-weight:400;">(opcional)</span></label>
+          <input class="form-input" id="ai-topic" placeholder="Ex: acne hormonal, hipertensão...">
+        </div>
+        <button class="btn btn-cream" style="width:100%;" onclick="runAI()" id="ai-btn">
+          ✨ Gerar com Gemini
+        </button>
+        <div style="margin-top:10px;font-size:11px;color:var(--text-3);text-align:center;">
+          Powered by Google Gemini 1.5 Flash
+        </div>
+      </div>
+      <div class="ai-result-card" id="ai-result">
+        <div class="empty">
+          <div class="empty-icon">✨</div>
+          <p>Configure os parâmetros e clique em <strong>Gerar com Gemini</strong> para criar seu conteúdo.</p>
+          ${!savedKey ? '<p style="margin-top:8px;font-size:12px;color:var(--amber);">⚠️ Configure a API Key do Gemini primeiro.</p>' : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- AI HISTORY -->
+    ${DB.aiHistory.filter(h=>h.userId===CU.id).length > 0 ? `
+    <div style="margin-top:28px;">
+      <div class="sh"><h2 style="font-size:16px;">Histórico gerado</h2></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${DB.aiHistory.filter(h=>h.userId===CU.id).slice(-5).reverse().map(h=>`
+        <div onclick="loadAIHistory('${h.id}')" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:border-color var(--transition);" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-family:'Playfair Display',serif;font-size:13px;color:var(--cream);">${h.titulo||h.title||'Sem título'}</span>
+            <span class="tag tag-gray">${h.specialty||''}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-3);">${(h.legenda||'').substring(0,80)}...</div>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+  </div>`;
+
+  // Pre-fill specialty from user profile or briefing
+  const specSel = document.getElementById('ai-spec');
+  if(specSel){
+    const specVal = (briefing && briefing.specialty) || CU.specialty || '';
+    const opt = [...specSel.options].find(o => o.value === specVal || o.text === specVal);
+    if(opt) specSel.value = opt.value;
+  }
+  // Pre-fill tone from briefing
+  if(briefing && briefing.toneOfVoice){
+    const toneSel = document.getElementById('ai-tone');
+    if(toneSel){
+      const toneOpt = [...toneSel.options].find(o=>o.text===briefing.toneOfVoice);
+      if(toneOpt) toneSel.value = toneOpt.value;
+    }
+  }
+}
+
+/** Salva ou limpa a chave Gemini via UI */
+function handleSaveGeminiKey(){
+  const inp = document.getElementById('gemini-key-input');
+  if(!inp) return;
+  const val = inp.value.trim();
+  if(!val || val.startsWith('•')){ showNotif('Digite uma chave válida','error'); return; }
+  if(!val.startsWith('AIza')){ showNotif('A chave Gemini deve começar com "AIza"','error'); return; }
+  saveGeminiKey(val);
+  showNotif('API Key salva com segurança! ✓','success');
+  // Re-render to show updated status
+  mTab('ai', document.getElementById('mn-ai'));
+}
+
+function handleClearGeminiKey(){
+  if(!confirm('Remover a API Key salva?')) return;
+  localStorage.removeItem('gemini_api_key');
+  showNotif('Chave removida','info');
+  mTab('ai', document.getElementById('mn-ai'));
+}
+
+/** Executa geração via Gemini */
 async function runAI(){
   if(aiRunning) return;
-  aiRunning=true;
-  const btn=document.getElementById('ai-btn');
-  btn.disabled=true; btn.innerHTML='<div class="ai-spinner ai-spin" style="width:14px;height:14px;border-width:2px;"></div> Gerando...';
-  document.getElementById('ai-result').innerHTML=`<div class="ai-spin-wrap"><div class="ai-spinner ai-spin"></div><div style="font-size:13px;color:var(--text-2);">Criando conteúdo com ética médica...</div></div>`;
-  const spec=document.getElementById('ai-spec').value;
-  const goal=document.getElementById('ai-goal').value;
-  const type=document.getElementById('ai-type').value;
-  const aud=document.getElementById('ai-aud').value;
-  const tone=document.getElementById('ai-tone').value;
-  const topic=document.getElementById('ai-topic').value;
+  const key = getGeminiKey();
+  if(!key){ showNotif('Configure a API Key do Gemini primeiro','error'); return; }
+
+  aiRunning = true;
+  const btn = document.getElementById('ai-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="ai-spinner ai-spin" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></div> Gerando...';
+  document.getElementById('ai-result').innerHTML = `
+    <div class="ai-spin-wrap">
+      <div class="ai-spinner ai-spin"></div>
+      <div style="font-size:13px;color:var(--text-2);margin-top:8px;">Gerando conteúdo com ética médica via Gemini...</div>
+    </div>`;
+
+  // Collect params
+  const params = {
+    spec:  document.getElementById('ai-spec')?.value  || CU.specialty || '',
+    goal:  document.getElementById('ai-goal')?.value  || '',
+    type:  document.getElementById('ai-type')?.value  || 'carrossel',
+    aud:   document.getElementById('ai-aud')?.value   || '',
+    tone:  document.getElementById('ai-tone')?.value  || '',
+    topic: document.getElementById('ai-topic')?.value || ''
+  };
+
+  // Load briefing as context
+  const briefing = loadBriefing(CU.id);
+
+  // Build structured prompt
+  const prompt = buildGeminiPrompt(params, briefing);
+
   try {
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`Você é especialista em marketing médico para a plataforma DoctorBrand Co. Crie conteúdo ético para Instagram.\n\nEspecialidade: ${spec}\nObjetivo: ${goal}\nTipo: ${type}\nPúblico: ${aud}\nTom: ${tone}\nTema: ${topic||'livre'}\n\nREGRAS: nunca promessas de cura, sempre indicar consulta médica, seguir CFM.\n\nResponda APENAS em JSON (sem markdown):\n{"titulo":"título max 60 chars","tema":"tema principal","ideia":"briefing visual 2-3 frases","legenda":"legenda completa com emojis quebras de linha e hashtags 400-700 chars","hashtags":["tag1","tag2","tag3","tag4","tag5"],"cta":"chamada para acao","slides":["Slide 1 título","Slide 2","Slide 3","Slide 4","Slide 5"],"nota_etica":"nota ética do conteudo"}`}]})});
-    const data=await res.json();
-    const text=data.content?.map(b=>b.text||'').join('');
-    const ai=JSON.parse(text.replace(/```json|```/g,'').trim());
-    const hid=Date.now();
-    DB.aiHistory.push({id:hid,specialty:spec,goal,type,title:ai.titulo,...ai});
-    if(DB.aiHistory.length>20) DB.aiHistory=DB.aiHistory.slice(-20);
+    const rawText = await generateContentWithGemini(prompt);
+
+    // Parse JSON — strip any markdown fences if model accidentally added them
+    const clean = rawText.replace(/```json|```/g, '').trim();
+    let ai;
+    try {
+      ai = JSON.parse(clean);
+    } catch(parseErr){
+      // If JSON parse fails, try to extract JSON block with regex
+      const match = clean.match(/\{[\s\S]*\}/);
+      if(match) ai = JSON.parse(match[0]);
+      else throw new Error('Resposta não está em JSON válido. Tente novamente.');
+    }
+
+    // Save to history
+    const hid = Date.now();
+    DB.aiHistory.push({
+      id: hid, userId: CU.id,
+      specialty: params.spec, goal: params.goal, type: params.type,
+      titulo: ai.titulo, title: ai.titulo,
+      legenda: ai.legenda, tema: ai.tema,
+      ...ai
+    });
+    if(DB.aiHistory.length > 30) DB.aiHistory = DB.aiHistory.slice(-30);
     saveDB();
-    document.getElementById('ai-result').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
-      <div><div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);">${ai.titulo}</div><div style="font-size:12px;color:var(--text-2);margin-top:2px;">${spec} · ${type}</div></div>
-      <button class="btn btn-cream btn-sm" onclick="saveAIPost(${hid})">+ Salvar no planejamento</button>
+
+    // Render result
+    document.getElementById('ai-result').innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--cream);letter-spacing:-.2px;">${ai.titulo}</div>
+        <div style="font-size:12px;color:var(--text-2);margin-top:3px;">${params.spec} · ${params.type} · ${ai.tema||''}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="copyText(\`${(ai.legenda||'').replace(/`/g,'\\`')}\`)">📋 Copiar</button>
+        <button class="btn btn-cream btn-sm" onclick="saveAIPost('${hid}')">+ Salvar no planejamento</button>
+      </div>
     </div>
-    ${[['💡 Ideia criativa',ai.ideia],['📝 Legenda completa',null],['📣 CTA',ai.cta]].map(([lbl,val],i)=>i===1?`
-    <div class="ai-section"><div class="ai-section-label">${lbl}</div>
-    <div style="font-size:13px;line-height:1.7;white-space:pre-line;background:var(--surface-2);padding:14px;border-radius:var(--r-sm);border:1px solid var(--border);color:var(--text);">${ai.legenda}</div>
-    <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="copyText(\`${ai.legenda.replace(/`/g,'\\`')}\`)">📋 Copiar</button></div>`:
-    `<div class="ai-section"><div class="ai-section-label">${lbl}</div><div style="font-size:13px;line-height:1.65;color:var(--text-2);">${val}</div></div>`).join('')}
-    ${ai.slides?.length?`<div class="ai-section"><div class="ai-section-label">🎠 Slides sugeridos</div><div style="display:flex;flex-direction:column;gap:6px;">${ai.slides.map((s,i)=>`<div style="display:flex;align-items:center;gap:10px;"><div style="width:22px;height:22px;border-radius:50%;background:var(--gold-soft);color:var(--gold);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(201,169,110,.2);">${i+1}</div><span style="font-size:13px;color:var(--text);">${s}</span></div>`).join('')}</div></div>`:''}
-    <div class="ai-section"><div class="ai-section-label">🔖 Hashtags</div><div style="display:flex;gap:6px;flex-wrap:wrap;">${(ai.hashtags||[]).map(h=>`<span class="tag tag-gray">#${h.replace('#','')}</span>`).join('')}</div></div>
-    <div style="background:var(--amber-bg);border:1px solid rgba(200,144,64,.2);border-radius:var(--r-sm);padding:12px 14px;"><div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">⚖️ Nota ética</div><div style="font-size:12px;color:var(--amber);">${ai.nota_etica||''}</div></div>`;
-  } catch(e){
-    document.getElementById('ai-result').innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><p>Erro ao gerar. Tente novamente.<br><span style="font-size:11px;">${e.message}</span></p></div>`;
+
+    <div class="ai-section">
+      <div class="ai-section-label">💡 Ideia criativa para o designer</div>
+      <div style="font-size:13px;color:var(--text-2);line-height:1.65;">${ai.ideia||''}</div>
+    </div>
+
+    ${ai.slides?.length ? `
+    <div class="ai-section">
+      <div class="ai-section-label">🎠 Roteiro de slides</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        ${ai.slides.map((s,i)=>`
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:24px;height:24px;border-radius:50%;background:var(--gold-soft);color:var(--gold);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(201,169,110,.25);">${i+1}</div>
+          <span style="font-size:13px;color:var(--text);">${s}</span>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="ai-section">
+      <div class="ai-section-label">📝 Legenda completa</div>
+      <div style="font-size:13px;line-height:1.75;white-space:pre-line;background:var(--surface-2);padding:16px;border-radius:var(--r-sm);border:1px solid var(--border);color:var(--text);">${ai.legenda||''}</div>
+    </div>
+
+    <div class="ai-section">
+      <div class="ai-section-label">🔖 Hashtags sugeridas</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${(ai.hashtags||[]).map(h=>`<span class="tag tag-gray">#${h.replace('#','')}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="ai-section">
+      <div class="ai-section-label">📣 Chamada para ação (CTA)</div>
+      <div style="font-size:13px;color:var(--text-2);">${ai.cta||''}</div>
+    </div>
+
+    <div style="background:var(--amber-bg);border:1px solid rgba(200,144,64,.2);border-radius:var(--r-sm);padding:13px 16px;">
+      <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">⚖️ Conformidade Ética</div>
+      <div style="font-size:12px;color:var(--amber);line-height:1.6;">${ai.nota_etica||''}</div>
+    </div>`;
+
+  } catch(err){
+    document.getElementById('ai-result').innerHTML = `
+    <div class="empty">
+      <div class="empty-icon">⚠️</div>
+      <p style="color:var(--red);font-weight:600;">Erro ao gerar conteúdo</p>
+      <p style="margin-top:8px;font-size:12px;color:var(--text-2);">${err.message}</p>
+      <button class="btn btn-ghost btn-sm" style="margin-top:14px;" onclick="runAI()">Tentar novamente</button>
+    </div>`;
+    showNotif(err.message.length > 60 ? 'Erro ao gerar. Veja o painel de resultado.' : err.message, 'error');
   }
-  aiRunning=false; btn.disabled=false; btn.innerHTML='✨ Gerar com IA';
+
+  aiRunning = false;
+  btn.disabled = false;
+  btn.innerHTML = '✨ Gerar com Gemini';
+}
+
+function loadAIHistory(hid){
+  const h = DB.aiHistory.find(x=>x.id == hid);
+  if(!h) return;
+  const res = document.getElementById('ai-result');
+  if(!res) return;
+  // Re-use save function to show saved content
+  res.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);">${h.titulo||h.title}</div>
+      <div style="font-size:11px;color:var(--text-3);">${h.specialty||''} · Do histórico</div>
+    </div>
+    <button class="btn btn-cream btn-sm" onclick="saveAIPost('${hid}')">+ Salvar no planejamento</button>
+  </div>
+  <div class="ai-section">
+    <div class="ai-section-label">📝 Legenda</div>
+    <div style="font-size:13px;line-height:1.7;white-space:pre-line;background:var(--surface-2);padding:14px;border-radius:var(--r-sm);border:1px solid var(--border);color:var(--text);">${h.legenda||''}</div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="copyText(\`${(h.legenda||'').replace(/`/g,'\\`')}\`)">📋 Copiar</button>
+  </div>`;
 }
 
 function saveAIPost(hid){
-  const h=DB.aiHistory.find(x=>x.id===hid);
+  const h = DB.aiHistory.find(x => x.id == hid);
   if(!h) return;
-  const d=new Date(); d.setDate(d.getDate()+7);
-  DB.posts.push({id:'p'+Date.now(),userId:CU.id,title:h.titulo||h.title,caption:h.legenda||'',type:h.type||'carrossel',status:'pendente',date:d.toLocaleDateString('pt-BR'),week:getWk(d),driveUrl:'',emoji:'🤖',theme:h.tema||'Educação',revisionNote:'',revisionDone:false,scheduledAt:'',scheduledTime:''});
-  saveDB(); showNotif('Post salvo no planejamento!','success');
+  const d = new Date(); d.setDate(d.getDate()+7);
+  DB.posts.push({
+    id:'p'+Date.now(), userId:CU.id,
+    title: h.titulo||h.title||'Post IA',
+    caption: h.legenda||'',
+    type: h.type||'carrossel',
+    status:'pendente',
+    date: d.toLocaleDateString('pt-BR'),
+    week: getWk(d),
+    driveUrl:'', emoji:'🤖',
+    theme: h.tema||'Educação',
+    revisionNote:'', revisionDone:false, scheduledAt:'', scheduledTime:''
+  });
+  saveDB();
+  showNotif('Post salvo no planejamento! ✅','success');
 }
 
 // ─── CALENDAR ───
@@ -1249,61 +1645,174 @@ function calNav(d){ calM+=d; if(calM>11){calM=0;calY++;} if(calM<0){calM=11;calY
 function calToday(){ calM=new Date().getMonth(); calY=new Date().getFullYear(); mTab('calendar',document.getElementById('mn-calendar')); }
 
 // ─── INSTAGRAM ───
+// ─── INSTAGRAM — Conexão simulada (UX only, sem OAuth) ───
+// ══════════════════════════════════════════════════════════
+//  INSTAGRAM STORAGE MODULE
+// ══════════════════════════════════════════════════════════
+
+/** Salva dados da conexão Instagram no localStorage */
+function connectInstagram(userId, username, password){
+  const data = {
+    userId,
+    username,
+    // Nunca armazenar senha real em produção.
+    // Aqui é puramente simulação de UX conforme solicitado.
+    passwordMask: password ? '****' : '',
+    connectedAt: new Date().toISOString(),
+    profileName: username,
+    followers: Math.floor(Math.random()*8000)+2000,
+    following: Math.floor(Math.random()*600)+200,
+    posts: Math.floor(Math.random()*80)+20
+  };
+  localStorage.setItem(`ig_conn_${userId}`, JSON.stringify(data));
+  return data;
+}
+
+/** Carrega dados de conexão Instagram do localStorage */
+function getInstagramConnection(userId){
+  const raw = localStorage.getItem(`ig_conn_${userId}`);
+  return raw ? JSON.parse(raw) : null;
+}
+
+/** Remove conexão Instagram do localStorage */
+function disconnectInstagram(userId){
+  localStorage.removeItem(`ig_conn_${userId}`);
+}
+
 function rInstagram(c){
-  const u=DB.users.find(x=>x.id===CU.id);
-  const connected=u?.igConnected;
+  const igConn = getInstagramConnection(CU.id);
+  const connected = !!igConn;
+
   c.innerHTML=`
   <div class="fade-up">
     <div class="sh"><h2>Conexão com Instagram</h2></div>
+
     <div class="grid g2 gap16">
-      <div class="${connected?'card':'ig-connect-wrap'}">
-        ${connected?`
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
-          <div class="ig-logo" style="width:48px;height:48px;border-radius:12px;font-size:20px;">📸</div>
-          <div><div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--cream);">Conta conectada</div><div style="font-size:13px;color:var(--text-2);">${u.igHandle||'@usuario'}</div></div>
-          <span class="tag tag-green" style="margin-left:auto;">✓ Ativo</span>
-        </div>
-        <button class="btn btn-red btn-sm" onclick="disconnectIG()">Desconectar conta</button>`:`
-        <div class="ig-logo">📸</div>
-        <div style="font-family:'Playfair Display',serif;font-size:17px;color:var(--cream);margin-bottom:8px;">Conectar ao Instagram</div>
-        <p style="font-size:13px;color:var(--text-2);margin-bottom:20px;line-height:1.6;">Vincule sua conta profissional para agendar e publicar posts automaticamente.</p>
-        <div class="form-group"><label class="form-label">Instagram Handle</label><input class="form-input" id="ig-handle" placeholder="@sua.conta" value="${u?.igHandle||''}"></div>
-        <div class="form-group"><label class="form-label">Token de acesso (Meta Business)</label><input class="form-input" id="ig-token" type="password" placeholder="EAAxxxx..."></div>
-        <button class="btn btn-cream" style="width:100%;" onclick="connectIG()">Conectar conta profissional</button>`}
-      </div>
+      <!-- CONNECTION PANEL -->
       <div>
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-title">Status da integração</div>
-          <div style="margin-top:14px;">
-            ${[['Conta Instagram',connected,'sd-green','sd-amber'],['Meta Business API',false,'sd-green','sd-amber'],['Google Drive',true,'sd-green','sd-red'],['Publicação automática',false,'sd-green','sd-amber']].map(([lbl,ok,ck,nk])=>`
-            <div class="ig-status-row">
-              <div style="display:flex;align-items:center;gap:8px;"><div class="status-dot ${ok?ck:nk}"></div><span style="font-size:13px;">${lbl}</span></div>
-              <span class="tag ${ok?'tag-green':'tag-amber'}">${ok?'Ativo':'Pendente'}</span>
+        ${connected ? `
+        <!-- ── CONNECTED STATE ── -->
+        <div class="card" style="border-color:rgba(74,140,106,.3);">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#e09b3d,#c74b4f,#9c27b0);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📸</div>
+            <div style="flex:1;">
+              <div style="font-family:'Playfair Display',serif;font-size:17px;color:var(--cream);">@${igConn.username}</div>
+              <div style="font-size:12px;color:var(--text-2);margin-top:2px;">Conectado em ${new Date(igConn.connectedAt).toLocaleDateString('pt-BR')}</div>
+            </div>
+            <span class="tag tag-green">✓ Conectado</span>
+          </div>
+
+          <!-- Simulated Profile Stats -->
+          <div class="grid g3 gap8" style="margin-bottom:18px;">
+            ${[
+              ['Seguidores', igConn.followers?.toLocaleString('pt-BR')],
+              ['Seguindo',   igConn.following?.toLocaleString('pt-BR')],
+              ['Posts',      igConn.posts?.toLocaleString('pt-BR')]
+            ].map(([l,v])=>`
+            <div style="text-align:center;padding:12px;background:var(--surface-2);border-radius:var(--r-sm);border:1px solid var(--border);">
+              <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);">${v}</div>
+              <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">${l}</div>
             </div>`).join('')}
           </div>
+
+          <div style="background:var(--amber-bg);border:1px solid rgba(200,144,64,.15);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:16px;">
+            <div style="font-size:11px;color:var(--amber);">⚠️ Simulação de UX — dados ilustrativos. A publicação real exige integração com Meta Graph API.</div>
+          </div>
+
+          <button class="btn btn-red btn-sm" onclick="handleDisconnectIG()">Desconectar conta</button>
         </div>
+        ` : `
+        <!-- ── DISCONNECTED STATE ── -->
         <div class="card">
-          <div class="card-title" style="margin-bottom:14px;">Sobre a integração</div>
-          <p style="font-size:12.5px;color:var(--text-2);line-height:1.7;">A publicação utiliza a <strong style="color:var(--cream);">Instagram Graph API</strong> via Meta Business Suite. Posts precisam ser aprovados antes do agendamento. Imagens e vídeos são servidos via <strong style="color:var(--cream);">Google Drive</strong>.</p>
+          <div class="ig-connect-wrap" style="border:none;padding:0;">
+            <div class="ig-logo" style="margin-bottom:16px;">📸</div>
+            <div style="font-family:'Playfair Display',serif;font-size:17px;color:var(--cream);margin-bottom:6px;">Conectar Instagram</div>
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:22px;line-height:1.6;max-width:320px;margin-left:auto;margin-right:auto;">Vincule sua conta para simular o agendamento e acompanhar o status de publicação.</p>
+          </div>
+
+          <!-- INSTAGRAM SIMULATED LOGIN FORM -->
+          <div class="form-group">
+            <label class="form-label">Usuário do Instagram</label>
+            <input class="form-input" id="ig-username" placeholder="@seu.usuario" autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Senha</label>
+            <input class="form-input" id="ig-password" type="password" placeholder="••••••••" autocomplete="current-password">
+          </div>
+
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:16px;">
+            <div style="font-size:11px;color:var(--text-3);line-height:1.6;">
+              🔒 <strong style="color:var(--text-2);">Simulação de UX</strong> — nenhum dado é enviado a servidores externos. As credenciais são armazenadas apenas localmente para fins de demonstração.
+            </div>
+          </div>
+
+          <button class="btn btn-cream" style="width:100%;" onclick="handleConnectIG()">Conectar conta</button>
+        </div>`}
+      </div>
+
+      <!-- STATUS PANEL -->
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title" style="margin-bottom:14px;">Status da integração</div>
+          ${[
+            ['Conta Instagram',    connected,  'sd-green','sd-amber'],
+            ['Meta Business API',  false,       'sd-green','sd-amber'],
+            ['Google Drive',       true,        'sd-green','sd-red'],
+            ['Publicação automática', false,    'sd-green','sd-amber']
+          ].map(([lbl,ok,ck,nk])=>`
+          <div class="ig-status-row">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="status-dot ${ok?ck:nk}"></div>
+              <span style="font-size:13px;">${lbl}</span>
+            </div>
+            <span class="tag ${ok?'tag-green':'tag-amber'}">${ok?'Ativo':'Pendente'}</span>
+          </div>`).join('')}
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:10px;">Sobre a integração</div>
+          <p style="font-size:12.5px;color:var(--text-2);line-height:1.7;">
+            A publicação real utilizará a <strong style="color:var(--cream);">Instagram Graph API</strong> via Meta Business Suite. Posts precisam estar aprovados antes do agendamento. Arquivos são servidos via <strong style="color:var(--cream);">Google Drive</strong>.
+          </p>
         </div>
       </div>
     </div>
   </div>`;
 }
 
-function connectIG(){
-  const handle=document.getElementById('ig-handle')?.value.trim();
-  const token=document.getElementById('ig-token')?.value.trim();
-  if(!handle){showNotif('Informe o handle do Instagram','error');return;}
-  const u=DB.users.find(x=>x.id===CU.id);
-  if(u){u.igHandle=handle;u.igConnected=true;u.igToken=token?'****stored****':'';saveDB();CU=u;rInstagram(document.getElementById('m-content'));showNotif('Instagram conectado com sucesso!','success');}
+/** Handler: conectar Instagram */
+function handleConnectIG(){
+  const username = document.getElementById('ig-username')?.value.trim();
+  const password = document.getElementById('ig-password')?.value;
+  if(!username){ showNotif('Informe o usuário do Instagram','error'); return; }
+  if(!password){ showNotif('Informe a senha','error'); return; }
+
+  const handle = username.startsWith('@') ? username : '@'+username;
+  const connData = connectInstagram(CU.id, handle.replace('@',''), password);
+
+  // Sync handle back to user object in DB
+  const u = DB.users.find(x=>x.id===CU.id);
+  if(u){ u.igHandle = handle; u.igConnected = true; saveDB(); CU = u; }
+
+  rInstagram(document.getElementById('m-content'));
+  showNotif('Instagram conectado com sucesso! 🎉','success');
 }
 
-function disconnectIG(){
+/** Handler: desconectar Instagram */
+function handleDisconnectIG(){
   if(!confirm('Desconectar a conta do Instagram?')) return;
-  const u=DB.users.find(x=>x.id===CU.id);
-  if(u){u.igConnected=false;u.igToken='';saveDB();CU=u;rInstagram(document.getElementById('m-content'));showNotif('Conta desconectada','info');}
+  disconnectInstagram(CU.id);
+
+  const u = DB.users.find(x=>x.id===CU.id);
+  if(u){ u.igConnected = false; saveDB(); CU = u; }
+
+  rInstagram(document.getElementById('m-content'));
+  showNotif('Conta desconectada','info');
 }
+
+// Keep legacy names as aliases for backwards compat
+function connectIG(){ handleConnectIG(); }
+function disconnectIG(){ handleDisconnectIG(); }
 
 // ─── METRICS ───
 function rMetrics(c){
@@ -1356,11 +1865,13 @@ function cTab(tab, el){
   closeSb('collab');
   document.querySelectorAll('#page-collab .nav-item').forEach(x=>x.classList.remove('active'));
   if(el) el.classList.add('active');
-  document.getElementById('c-tb-title').textContent=tab==='revisions'?'Revisões Pendentes':'Revisões Concluídas';
+  const titles={revisions:'Revisões Pendentes',done:'Revisões Concluídas',briefings:'Briefings dos Clientes'};
+  document.getElementById('c-tb-title').textContent = titles[tab]||tab;
   const c=document.getElementById('c-content');
   c.innerHTML='';
   if(tab==='revisions') rCollabRevisions(c);
-  else rCollabDone(c);
+  else if(tab==='done') rCollabDone(c);
+  else if(tab==='briefings') rCollabBriefings(c);
 }
 
 function rCollabRevisions(c){
@@ -1464,7 +1975,7 @@ function hTab(tab,el){
   closeSb('headops');
   document.querySelectorAll('#page-headops .nav-item').forEach(x=>x.classList.remove('active'));
   if(el) el.classList.add('active');
-  const titles={members:'Membros (Médicos)',collaborators:'Colaboradores',posts:'Todos os Posts',analytics:'Analytics',settings:'Configurações'};
+  const titles={members:'Membros (Médicos)',collaborators:'Colaboradores',posts:'Todos os Posts',analytics:'Analytics',settings:'Configurações',briefings:'Briefings dos Clientes'};
   document.getElementById('h-tb-title').textContent=titles[tab]||tab;
   const c=document.getElementById('h-content');
   c.innerHTML='';
@@ -1473,6 +1984,7 @@ function hTab(tab,el){
   else if(tab==='posts') rHPosts(c);
   else if(tab==='analytics') rHAnalytics(c);
   else if(tab==='settings') rHSettings(c);
+  else if(tab==='briefings') rHBriefings(c);
 }
 
 function rHMembers(c){
@@ -1800,6 +2312,236 @@ function saveHPost(){
   const d=new Date(dv+'T12:00:00');
   DB.posts.push({id:'p'+Date.now(),userId:uid,title:t,caption:document.getElementById('hn-cap').value,type:document.getElementById('hn-tp').value,status:'pendente',date:dv?d.toLocaleDateString('pt-BR'):'A definir',week:getWk(d),driveUrl:document.getElementById('hn-dr').value.trim(),emoji:document.getElementById('hn-em').value||'📸',theme:document.getElementById('hn-th').value,revisionNote:'',revisionDone:false,scheduledAt:'',scheduledTime:''});
   saveDB();closeModal();hTab('posts',document.querySelectorAll('#page-headops .nav-item')[2]);showNotif('Post criado!','success');
+}
+
+// ══════════════════════════════════════════════════════════
+//  BRIEFING MODULE
+//  Storage isolado por userId. Leitura global para collab/headops.
+// ══════════════════════════════════════════════════════════
+
+/**
+ * saveBriefing(userId, data)
+ * Persiste o briefing do cliente no localStorage.
+ * Chave: briefing_{userId}
+ */
+function saveBriefing(userId, data){
+  localStorage.setItem(`briefing_${userId}`, JSON.stringify({ ...data, updatedAt: new Date().toISOString() }));
+}
+
+/**
+ * loadBriefing(userId)
+ * Recupera o briefing do cliente do localStorage.
+ * @returns {Object|null}
+ */
+function loadBriefing(userId){
+  const raw = localStorage.getItem(`briefing_${userId}`);
+  return raw ? JSON.parse(raw) : null;
+}
+
+/** Retorna todos os briefings de todos os membros */
+function getAllBriefings(){
+  const members = DB.users.filter(u => u.role === 'member');
+  return members.map(m => ({ user: m, briefing: loadBriefing(m.id) })).filter(x => x.briefing);
+}
+
+// ─── BRIEFING RENDER (Member — editable) ───
+function rBriefing(c){
+  const saved = loadBriefing(CU.id) || {};
+
+  c.innerHTML = `
+  <div class="fade-up">
+    <div class="sh">
+      <h2>Briefing da Marca</h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${saved.updatedAt ? `<span class="tag tag-green">✓ Salvo em ${new Date(saved.updatedAt).toLocaleDateString('pt-BR')}</span>` : `<span class="tag tag-gray">Não preenchido</span>`}
+      </div>
+    </div>
+
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:24px;font-size:13px;color:var(--text-2);line-height:1.6;">
+      📋 O briefing é usado como <strong style="color:var(--cream);">contexto automático pela IA</strong> ao gerar conteúdo, e pode ser visualizado pela equipe de criação (somente leitura).
+    </div>
+
+    <div class="grid g2 gap16">
+      <!-- FORM -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Informações da Marca</div>
+
+        <div class="form-group">
+          <label class="form-label">Nome da marca / consultório <span style="color:var(--red);">*</span></label>
+          <input class="form-input" id="bf-brand" placeholder="Ex: Clínica Dra. Ana Rodrigues" value="${saved.brandName||''}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Especialidade médica <span style="color:var(--red);">*</span></label>
+          <div class="select-wrap">
+            <select class="form-select" id="bf-spec">
+              ${['Dermatologia','Cardiologia','Ortopedia','Ginecologia','Neurologia','Pediatria','Endocrinologia','Oftalmologia','Psiquiatria','Urologia','Nutrologia','Cirurgia Plástica','Outra'].map(s=>`<option ${s===saved.specialty?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Público-alvo principal <span style="color:var(--red);">*</span></label>
+          <input class="form-input" id="bf-audience" placeholder="Ex: Mulheres entre 30-50 anos, classe A/B, preocupadas com saúde da pele" value="${saved.audience||''}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tom de voz da marca</label>
+          <div class="select-wrap">
+            <select class="form-select" id="bf-tone">
+              ${['Educativo e acessível','Científico e técnico','Empático e acolhedor','Descontraído e próximo','Inspirador e motivacional','Formal e sério'].map(t=>`<option ${t===saved.toneOfVoice?'selected':''}>${t}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Objetivo principal do conteúdo</label>
+          <div class="select-wrap">
+            <select class="form-select" id="bf-goal">
+              ${['Educar pacientes','Construir autoridade','Captar novos pacientes','Humanizar o médico','Aumentar engajamento','Divulgar procedimentos'].map(g=>`<option ${g===saved.contentGoal?'selected':''}>${g}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Diferenciais da marca / consultório</label>
+          <textarea class="form-textarea" id="bf-diff" rows="3" placeholder="Ex: Atendimento humanizado, tecnologia de ponta, mais de 10 anos de experiência, especialista em pele negra...">${saved.differentials||''}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observações gerais</label>
+          <textarea class="form-textarea" id="bf-obs" rows="3" placeholder="Ex: Evitar usar imagens de procedimentos invasivos. Sempre mencionar que resultados podem variar. Focar em conteúdo educativo...">${saved.observations||''}</textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button class="btn btn-cream" onclick="handleSaveBriefing()">💾 Salvar briefing</button>
+          ${saved.brandName ? `<button class="btn btn-ghost btn-sm" onclick="handleClearBriefing()">Limpar</button>` : ''}
+        </div>
+      </div>
+
+      <!-- PREVIEW CARD -->
+      <div>
+        <div class="card" style="position:sticky;top:calc(var(--topbar-h) + 16px);">
+          <div class="card-title" style="margin-bottom:16px;">Preview do briefing</div>
+          ${saved.brandName ? renderBriefingCard(saved) : `
+          <div class="empty" style="padding:32px 16px;">
+            <div class="empty-icon">📋</div>
+            <p>Preencha o formulário e salve para visualizar o briefing.</p>
+          </div>`}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/** Salvar briefing via UI */
+function handleSaveBriefing(){
+  const data = {
+    brandName:    document.getElementById('bf-brand')?.value.trim(),
+    specialty:    document.getElementById('bf-spec')?.value,
+    audience:     document.getElementById('bf-audience')?.value.trim(),
+    toneOfVoice:  document.getElementById('bf-tone')?.value,
+    contentGoal:  document.getElementById('bf-goal')?.value,
+    differentials:document.getElementById('bf-diff')?.value.trim(),
+    observations: document.getElementById('bf-obs')?.value.trim()
+  };
+  if(!data.brandName){ showNotif('Nome da marca é obrigatório','error'); return; }
+  if(!data.audience){ showNotif('Público-alvo é obrigatório','error'); return; }
+  saveBriefing(CU.id, data);
+  mTab('briefing', document.getElementById('mn-briefing'));
+  showNotif('Briefing salvo com sucesso! ✓','success');
+}
+
+function handleClearBriefing(){
+  if(!confirm('Limpar o briefing salvo?')) return;
+  localStorage.removeItem(`briefing_${CU.id}`);
+  mTab('briefing', document.getElementById('mn-briefing'));
+  showNotif('Briefing removido','info');
+}
+
+/**
+ * renderBriefingCard(briefing)
+ * Renderiza o card de briefing em modo somente leitura.
+ * Usado no preview do membro e na visualização de collab/headops.
+ */
+function renderBriefingCard(b){
+  const rows = [
+    ['🏥 Marca',         b.brandName],
+    ['🩺 Especialidade', b.specialty],
+    ['👥 Público-alvo',  b.audience],
+    ['🗣️ Tom de voz',    b.toneOfVoice],
+    ['🎯 Objetivo',      b.contentGoal],
+    ['⭐ Diferenciais',  b.differentials || '—'],
+    ['📝 Observações',   b.observations  || '—']
+  ];
+  return `
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    ${rows.map(([lbl,val])=>`
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">${lbl}</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.5;">${val||'—'}</div>
+    </div>`).join('')}
+    ${b.updatedAt ? `<div style="font-size:10px;color:var(--text-3);margin-top:4px;padding-top:10px;border-top:1px solid var(--border);">Atualizado em ${new Date(b.updatedAt).toLocaleString('pt-BR')}</div>` : ''}
+  </div>`;
+}
+
+// ─── COLLABORATOR: View all briefings (read-only) ───
+function rCollabBriefings(c){
+  const all = getAllBriefings();
+  c.innerHTML = `
+  <div class="fade-up">
+    <div class="sh"><h2>Briefings dos Clientes</h2><span class="tag tag-blue">${all.length} preenchidos</span></div>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:20px;font-size:13px;color:var(--text-2);">
+      📋 Visualização somente leitura. Use os briefings para entender o contexto de cada cliente antes de editar posts.
+    </div>
+    ${all.length === 0 ? `<div class="empty"><div class="empty-icon">📋</div><p>Nenhum cliente preencheu o briefing ainda.</p></div>` :
+      all.map(({ user, briefing }) => `
+      <div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border-soft);">
+          <div class="user-av" style="width:36px;height:36px;font-size:15px;">${user.name[0]}</div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--cream);">${user.name}</div>
+            <div style="font-size:12px;color:var(--text-3);">${user.specialty||'—'} · ${user.igHandle||''}</div>
+          </div>
+          <span class="tag tag-green" style="margin-left:auto;">📋 Briefing ativo</span>
+        </div>
+        ${renderBriefingCard(briefing)}
+      </div>`).join('')}
+  </div>`;
+}
+
+// ─── HEADOPS: View all briefings (read-only) ───
+function rHBriefings(c){
+  const all = getAllBriefings();
+  c.innerHTML = `
+  <div class="fade-up">
+    <div class="sh"><h2>Briefings dos Clientes</h2><span class="tag tag-gold">${all.length} de ${DB.users.filter(u=>u.role==='member').length} médicos</span></div>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:20px;font-size:13px;color:var(--text-2);">
+      📋 Visão consolidada de todos os briefings. Somente leitura — para editar, o médico deve acessar a aba Briefing no seu perfil.
+    </div>
+    ${all.length === 0 ? `<div class="empty"><div class="empty-icon">📋</div><p>Nenhum médico preencheu o briefing ainda.</p></div>` :
+      all.map(({ user, briefing }) => `
+      <div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border-soft);">
+          <div class="user-av" style="width:36px;height:36px;font-size:15px;">${user.name[0]}</div>
+          <div style="flex:1;">
+            <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--cream);">${user.name}</div>
+            <div style="font-size:12px;color:var(--text-3);">${user.specialty||'—'} · ${user.igHandle||''}</div>
+          </div>
+          <span class="tag tag-green">✓ Briefing</span>
+        </div>
+        ${renderBriefingCard(briefing)}
+      </div>`).join('')}
+
+    ${DB.users.filter(u=>u.role==='member' && !loadBriefing(u.id)).length > 0 ? `
+    <div class="sh" style="margin-top:24px;"><h2 style="font-size:15px;">Sem briefing</h2></div>
+    ${DB.users.filter(u=>u.role==='member' && !loadBriefing(u.id)).map(u=>`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;opacity:.6;">
+      <div class="user-av" style="width:32px;height:32px;font-size:13px;">${u.name[0]}</div>
+      <div><div style="font-size:13px;color:var(--cream);">${u.name}</div><div style="font-size:11px;color:var(--text-3);">${u.specialty||'—'}</div></div>
+      <span class="tag tag-gray" style="margin-left:auto;">Não preenchido</span>
+    </div>`).join('')}` : ''}
+  </div>`;
 }
 
 // ══════════════════════════════════════════════════════════
