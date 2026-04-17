@@ -4146,7 +4146,9 @@ function schedCard(p, isScheduled){
     body += '<div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Agendado no n8n</div>';
     body += '<div style="font-size:13px;color:var(--text-2);">' + (p.date || '') + ' às ' + (p.time || '') + '</div>';
     if(p.n8nExecutionId){
-      body += '<div style="font-size:11px;color:var(--text-3);margin-top:4px;">Execução: ' + p.n8nExecutionId + '</div>';
+      body += '<div style="font-size:11px;color:var(--text-3);margin-top:4px;">Execução n8n: #' + p.n8nExecutionId + '</div>';
+    } else {
+      body += '<div style="font-size:11px;color:var(--amber);margin-top:4px;">⚠ Execution ID não vinculado — cancelamento via n8n indisponível. <a href="javascript:void(0)" onclick="_tentarVincularExecId(\'' + p.id + '\')" style="color:var(--cream);text-decoration:underline;">Tentar vincular</a></div>';
     }
     body += '</div>';
     body += '<button class="btn btn-ghost btn-sm" style="border-color:var(--red);color:var(--red);" onclick="cancelarAgendamento(\'' + p.id + '\')">Cancelar publicação</button>';
@@ -4233,6 +4235,9 @@ async function confirmarAgendamento(postId){
     memberName: owner ? owner.name : '', igHandle: owner ? owner.igHandle || '' : ''
   };
 
+  // Timestamp ANTES de disparar — usado para filtrar execuções novas na API
+  const sentAt = new Date();
+
   try {
     const res = await fetch(webhook, {
       method: 'POST',
@@ -4240,21 +4245,98 @@ async function confirmarAgendamento(postId){
       body: JSON.stringify(payload)
     });
     if(!res.ok) throw new Error('n8n retornou ' + res.status);
-    let execId = '';
-    try { const data = await res.json(); execId = data.executionId || data.id || ''; } catch(e){}
 
-    p.n8nExecutionId = execId;
+    // Marca como agendado imediatamente
     p.scheduledViaN8n = true;
+    p.scheduledSentAt = sentAt.toISOString();
     delete p._scheduling;
     saveDB();
     updateSchedBadge();
     showNotif('Post programado para ' + dateStr + ' às ' + timeStr + '!','success');
+
+    // Re-renderiza a aba
     const cont = document.getElementById('c-content') || document.getElementById('h-content');
     if(cont) rCollabScheduling(cont);
+
+    // Em segundo plano, tenta descobrir o executionId via API do n8n
+    // Isso NÃO bloqueia o UX — se falhar, o post fica sem execId mas ainda vai publicar.
+    // O execId só é usado para cancelar depois.
+    _buscarExecutionId(p.id, sentAt).catch(e => console.warn('Não foi possível obter executionId:', e.message));
+
   } catch(e){
     showNotif('Erro no n8n: ' + e.message,'error');
     releaseLock();
   }
+}
+
+// Consulta a API do n8n para descobrir o executionId da execução que acabou de ser disparada.
+// Faz até 6 tentativas com espaçamento crescente (500ms, 1s, 2s, 3s, 5s, 8s) — total ~20s.
+// Busca a execução mais recente do workflow criada DEPOIS do timestamp de envio.
+async function _buscarExecutionId(postId, sentAt){
+  const apiKey = localStorage.getItem('n8n_api_key') || '';
+  const webhook = localStorage.getItem('n8n_webhook_url') || '';
+  if(!apiKey || !webhook) return;
+
+  // Extrai a base do n8n a partir da URL do webhook
+  let n8nBase = '';
+  try { n8nBase = new URL(webhook).origin; } catch(e){ return; }
+
+  // Extrai workflowId do webhook path (fallback: deixa n8n filtrar por status)
+  // A URL do webhook NÃO contém o workflowId, então vamos buscar todas execuções
+  // mais recentes e pegar a primeira que foi criada depois de sentAt
+
+  const delays = [500, 1000, 2000, 3000, 5000, 8000];
+  const sentMs = sentAt.getTime();
+
+  for(let attempt = 0; attempt < delays.length; attempt++){
+    await new Promise(r => setTimeout(r, delays[attempt]));
+
+    try {
+      const url = n8nBase + '/api/v1/executions?limit=10';
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { 'X-N8N-API-KEY': apiKey, 'Accept': 'application/json' }
+      });
+      if(!res.ok) continue;
+      const json = await res.json();
+      const execs = json.data || [];
+
+      // Encontra a execução criada depois do sentAt, mais próxima dele
+      let candidata = null;
+      let menorDelta = Infinity;
+      for(const ex of execs){
+        const startedAt = new Date(ex.startedAt || ex.createdAt || 0).getTime();
+        const delta = startedAt - sentMs;
+        // Só aceita execuções que começaram entre sentAt e sentAt+30s
+        if(delta >= -2000 && delta < 30000 && delta < menorDelta){
+          menorDelta = delta;
+          candidata = ex;
+        }
+      }
+
+      if(candidata && candidata.id){
+        const p = DB.posts.find(x => x.id === postId);
+        if(p){
+          p.n8nExecutionId = String(candidata.id);
+          saveDB();
+          // Re-renderiza se estiver na aba de agendamento
+          const cont = document.getElementById('c-content') || document.getElementById('h-content');
+          if(cont && cont.querySelector('[id^="sched-card-"], .card')){
+            // Só re-renderiza se a aba de agendamento estiver ativa
+            const activeTab = document.querySelector('#page-collab .nav-item.active, #page-headops .nav-item.active');
+            if(activeTab && (activeTab.id === 'cn-scheduling' || activeTab.id === 'hn-scheduling')){
+              rCollabScheduling(cont);
+            }
+          }
+          console.log('[n8n] Execution ID vinculado ao post', postId, '→', candidata.id);
+        }
+        return;
+      }
+    } catch(e){
+      console.warn('[n8n] tentativa', attempt + 1, 'falhou:', e.message);
+    }
+  }
+  console.warn('[n8n] Não foi possível obter executionId após', delays.length, 'tentativas');
 }
 
 async function cancelarAgendamento(postId){
@@ -4415,6 +4497,64 @@ function saveEditDateTime(postId){
     cTab('revisions', document.getElementById('cn-revisions'));
   } else {
     mTab('planning', document.getElementById('mn-planning'));
+  }
+}
+
+
+// Tenta vincular manualmente o executionId a um post já agendado
+async function _tentarVincularExecId(postId){
+  const p = DB.posts.find(x => x.id === postId);
+  if(!p){ return; }
+
+  const apiKey = localStorage.getItem('n8n_api_key') || '';
+  const webhook = localStorage.getItem('n8n_webhook_url') || '';
+  if(!apiKey){ showNotif('Configure a API Key do n8n em Configurações','error'); return; }
+  if(!webhook){ showNotif('Webhook do n8n não configurado','error'); return; }
+
+  let n8nBase = '';
+  try { n8nBase = new URL(webhook).origin; } catch(e){ showNotif('URL do webhook inválida','error'); return; }
+
+  showNotif('Consultando n8n...','info');
+
+  // Se temos scheduledSentAt, usa ele. Senão, pega execuções das últimas 24h
+  const sentMs = p.scheduledSentAt ? new Date(p.scheduledSentAt).getTime() : (Date.now() - 86400000);
+
+  try {
+    const res = await fetch(n8nBase + '/api/v1/executions?limit=50', {
+      method: 'GET',
+      headers: { 'X-N8N-API-KEY': apiKey, 'Accept': 'application/json' }
+    });
+    if(!res.ok){ showNotif('n8n retornou ' + res.status,'error'); return; }
+    const json = await res.json();
+    const execs = json.data || [];
+
+    // Filtra execuções rodando/aguardando criadas perto do sentAt
+    let candidata = null;
+    let menorDelta = Infinity;
+    for(const ex of execs){
+      const startedAt = new Date(ex.startedAt || ex.createdAt || 0).getTime();
+      const delta = startedAt - sentMs;
+      // Janela de 60s: execuções criadas até 60s após o envio
+      if(delta >= -5000 && delta < 60000 && delta < menorDelta){
+        // Prefere execuções que ainda estão rodando/aguardando (não finalizadas)
+        if(!ex.finished || ex.status === 'waiting' || ex.status === 'running'){
+          menorDelta = delta;
+          candidata = ex;
+        }
+      }
+    }
+
+    if(candidata && candidata.id){
+      p.n8nExecutionId = String(candidata.id);
+      saveDB();
+      showNotif('Execution ID vinculado: #' + candidata.id,'success');
+      const cont = document.getElementById('c-content') || document.getElementById('h-content');
+      if(cont) rCollabScheduling(cont);
+    } else {
+      showNotif('Nenhuma execução compatível encontrada no n8n.','warning');
+    }
+  } catch(e){
+    showNotif('Erro: ' + e.message,'error');
   }
 }
 
