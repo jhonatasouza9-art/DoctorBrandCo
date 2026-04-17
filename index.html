@@ -4260,27 +4260,55 @@ async function confirmarAgendamento(postId){
 async function cancelarAgendamento(postId){
   const p = DB.posts.find(x => x.id === postId);
   if(!p) return;
-  if(!confirm('Cancelar a publicação agendada?')) return;
 
-  const execId = p.n8nExecutionId;
+  const execId = p.n8nExecutionId || '';
   const apiKey = localStorage.getItem('n8n_api_key') || '';
   const webhook = localStorage.getItem('n8n_webhook_url') || '';
-  const n8nBase = webhook.split('/webhook')[0];
 
+  // Constrói a base do n8n a partir da URL do webhook
+  // webhook = "https://xxx.n8n.cloud/webhook/doctorbrand-instagram"
+  // base    = "https://xxx.n8n.cloud"
+  let n8nBase = '';
+  try {
+    const u = new URL(webhook);
+    n8nBase = u.origin;
+  } catch(e){}
+
+  let confirmMsg = 'Cancelar a publicação agendada deste post?\n\n';
+  if(execId && apiKey && n8nBase){
+    confirmMsg += 'O agendamento no n8n (execução #' + execId + ') será interrompido.';
+  } else if(!execId){
+    confirmMsg += 'ATENÇÃO: execution ID não foi salvo — a publicação no n8n NÃO poderá ser cancelada automaticamente. Apenas o status local será revertido.';
+  } else if(!apiKey){
+    confirmMsg += 'ATENÇÃO: API Key do n8n não configurada em Configurações — apenas o status local será revertido.';
+  }
+  if(!confirm(confirmMsg)) return;
+
+  // Tenta cancelar no n8n se tiver todos os dados
+  let n8nCancelOk = false;
+  let n8nError = '';
   if(execId && apiKey && n8nBase){
     try {
-      await fetch(n8nBase + '/api/v1/executions/' + execId + '/stop', {
+      const stopUrl = n8nBase + '/api/v1/executions/' + execId + '/stop';
+      const res = await fetch(stopUrl, {
         method: 'POST',
-        headers: {'X-N8N-API-KEY': apiKey, 'Content-Type':'application/json'}
+        headers: {
+          'X-N8N-API-KEY': apiKey,
+          'Accept': 'application/json'
+        }
       });
-      showNotif('Execução cancelada no n8n.','info');
+      if(res.ok){
+        n8nCancelOk = true;
+      } else {
+        const txt = await res.text();
+        n8nError = 'HTTP ' + res.status + ': ' + txt.substring(0, 120);
+      }
     } catch(e){
-      showNotif('Aviso: não foi possível contatar o n8n (' + e.message + ')','warning');
+      n8nError = e.message;
     }
-  } else if(!apiKey){
-    showNotif('API Key do n8n não configurada — cancelamento apenas local.','warning');
   }
 
+  // Reverte local
   p.status = 'pendente';
   p.n8nExecutionId = '';
   p.scheduledViaN8n = false;
@@ -4288,6 +4316,20 @@ async function cancelarAgendamento(postId){
   p.scheduledTime = '';
   saveDB();
   updateSchedBadge();
+
+  // Feedback
+  if(n8nCancelOk){
+    showNotif('Agendamento cancelado no n8n e post revertido para Pendente.', 'success');
+  } else if(n8nError){
+    showNotif('Post revertido localmente, mas n8n retornou erro: ' + n8nError, 'warning');
+  } else if(!execId){
+    showNotif('Post revertido localmente (sem execution ID salvo para cancelar no n8n).', 'warning');
+  } else if(!apiKey){
+    showNotif('Post revertido localmente. Configure a API Key do n8n para cancelamento automático.', 'warning');
+  } else {
+    showNotif('Post revertido localmente.', 'info');
+  }
+
   const cont = document.getElementById('c-content') || document.getElementById('h-content');
   if(cont) rCollabScheduling(cont);
 }
