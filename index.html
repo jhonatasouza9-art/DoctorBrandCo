@@ -822,7 +822,6 @@ img, svg, input, textarea, select, button {
  <div class="sb-section">
  <div class="sb-label">Colaborador</div>
  <div class="nav-item active" id="cn-revisions" onclick="cTab('revisions',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Revisões Pendentes<span class="nav-badge" id="c-rev-badge">0</span></div>
-      <div class="nav-item" id="cn-scheduling" onclick="cTab('scheduling',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agendamento<span class="nav-badge" id="cn-sched-badge" style="display:none"></span></div>
  <div class="nav-item" id="cn-done" onclick="cTab('done',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Revisões Concluídas</div>
  <div class="nav-item" id="cn-briefings" onclick="cTab('briefings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Briefings dos Clientes</div>
  </div>
@@ -862,8 +861,7 @@ img, svg, input, textarea, select, button {
  <div class="nav-item" onclick="hTab('collaborators',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Colaboradores</div>
  <div class="nav-item" onclick="hTab('posts',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Todos os Posts</div>
  <div class="nav-item" onclick="hTab('analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</div>
- <div class="nav-item" id="hn-scheduling" onclick="hTab('scheduling',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agendamento<span class="nav-badge" id="hn-sched-badge" style="display:none"></span></div>
-<div class="nav-item" onclick="hTab('settings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Configurações</div>
+ <div class="nav-item" onclick="hTab('settings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Configurações</div>
  <div class="nav-item" onclick="hTab('briefings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Briefings</div>
  </div>
  <div class="sb-spacer"></div>
@@ -1013,7 +1011,7 @@ function showMember(){
  const el=document.getElementById('mn-'+t);
  if(el) el.style.display=(CU.permissions||[]).includes(t)?'':'none';
  });
- mTab('home', document.getElementById('mn-home')); updateSchedBadge();
+ mTab('home', document.getElementById('mn-home'));
 }
 function updateSchedBadge(){ /* scheduling tab removido — aprovação vai direto ao Instagram */ }
 function mTab(tab, el){
@@ -1629,7 +1627,7 @@ function revertPostToPending(id){
   saveDB();
   showNotif('Post revertido para pendente.', 'info');
   // Atualiza a view correta por papel
-  if(CU.role === 'collaborator') cTab('revisions', document.getElementById('cn-revisions')); updateSchedBadge();
+  if(CU.role === 'collaborator') cTab('revisions', document.getElementById('cn-revisions'));
   else hTab('posts', document.querySelectorAll('#page-headops .nav-item')[2]);
 }
 
@@ -1653,13 +1651,9 @@ function setPF(k, v){ pFilter[k] = v; mTab('planning', document.getElementById('
 
 function approvePost(id){
   const p = DB.posts.find(x => x.id === id);
-  if(!p) return;
-  p.status = 'aprovado';
-  p.revisionNote = '';
-  p.revisionDone = false;
-  saveDB();
-  mTab('planning', document.getElementById('mn-planning'));
-  showNotif('Post aprovado! Acesse a aba Agendamento para programar a publicação.', 'success'); updateSchedBadge();
+  if(p){ p.status='aprovado'; p.revisionNote=''; p.revisionDone=false; saveDB();
+    mTab('planning', document.getElementById('mn-planning'));
+    showNotif('Post aprovado!', 'success'); updateSchedBadge(); }
 }
 
 // ── Revisão modal legado (mantido para compatibilidade) ──
@@ -1708,7 +1702,7 @@ function openPostModal(id){
       <div class="form-label">Legenda</div>
       <div style="font-size:12.5px;line-height:1.7;max-height:260px;overflow-y:auto;color:var(--text-2);white-space:pre-line;background:var(--surface-2);padding:12px;border-radius:var(--r-sm);border:1px solid var(--border);margin-bottom:10px;">${p.caption}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <span class="tag ${p.scheduledViaN8n ? 'tag-green' : 'tag-blue'}">${p.scheduledViaN8n ? 'Agendado' : 'Ag. agendamento'}</span>
+        <span class="tag ${stTag(p.status)}">${stLabel(p.status)}</span>
         <span class="tag tag-gray">${p.type.charAt(0).toUpperCase()+p.type.slice(1)}</span>
         ${p.scheduledAt?`<span class="tag tag-blue">${p.scheduledAt} ${p.scheduledTime}</span>`:''}
       </div>
@@ -2500,7 +2494,7 @@ function cTab(tab, el){
  closeSb('collab');
  document.querySelectorAll('#page-collab .nav-item').forEach(x=>x.classList.remove('active'));
  if(el) el.classList.add('active');
- const titles={revisions:'Revisões Pendentes',done:'Revisões Concluídas',briefings:'Briefings dos Clientes',scheduling:'Agendamento'};
+ const titles={revisions:'Revisões Pendentes',done:'Revisões Concluídas',briefings:'Briefings dos Clientes'};
  document.getElementById('c-tb-title').textContent = titles[tab]||tab;
  const c=document.getElementById('c-content');
  c.innerHTML='';
@@ -2620,7 +2614,7 @@ function hTab(tab,el){
  closeSb('headops');
  document.querySelectorAll('#page-headops .nav-item').forEach(x=>x.classList.remove('active'));
  if(el) el.classList.add('active');
- const titles={members:'Membros (Médicos)',collaborators:'Colaboradores',posts:'Todos os Posts',analytics:'Analytics',settings:'Configurações',briefings:'Briefings dos Clientes',scheduling:'Agendamento'};
+ const titles={members:'Membros (Médicos)',collaborators:'Colaboradores',posts:'Todos os Posts',analytics:'Analytics',settings:'Configurações',briefings:'Briefings dos Clientes'};
  document.getElementById('h-tb-title').textContent=titles[tab]||tab;
  const c=document.getElementById('h-content');
  c.innerHTML='';
@@ -2867,17 +2861,6 @@ function rHSettings(c){
         ${localStorage.getItem('n8n_webhook_url')?`<button class="btn btn-ghost btn-sm" onclick="testN8nWebhook()">Testar</button>`:''}
       </div>
       ${localStorage.getItem('n8n_webhook_url')?`<div style="margin-top:8px;font-size:11px;color:var(--green);">Webhook ativo — posts aprovados serão enviados automaticamente para o n8n.</div>`:''}
-      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-soft);">
-        <div style="font-size:12px;font-weight:600;color:var(--cream);margin-bottom:6px;">API Key do n8n (para cancelar agendamentos)</div>
-        <div style="font-size:11.5px;color:var(--text-2);margin-bottom:8px;">Necessário para cancelar posts agendados. Gere em: n8n → Settings → n8n API → Create API Key</div>
-        <div style="display:flex;gap:8px;">
-          <input class="form-input" id="n8n-apikey-input" placeholder="eyJhbGciOiJIUzI1NiIs..." type="password" style="flex:1;font-size:13px;">
-          <button class="btn btn-ghost btn-sm" onclick="saveN8nApiKey()">Salvar</button>
-        </div>
-        <div id="n8n-apikey-saved" style="margin-top:6px;font-size:11px;color:var(--text-3);display:none;">API Key salva.</div>
-      </div>
-    </div>`:''}
-  `;
     </div>
 
     <!-- Senha -->
@@ -2905,6 +2888,7 @@ function rHSettings(c){
       <button class="btn btn-red btn-sm" onclick="resetDB()">Resetar todos os dados</button>
     </div>
   </div>`;
+}
 function saveN8nWebhook(){
   const url = document.getElementById('n8n-webhook-input')?.value.trim();
   if(!url){ showNotif('Cole a URL do webhook do n8n','error'); return; }
@@ -3871,8 +3855,8 @@ function publicDriveUrl(url){
   return url;
 }
 
-function stTag(s){ return {aprovado:'tag-green',pendente:'tag-amber',revisao:'tag-red',reprovado:'tag-red',agendado:'tag-green'}[s]||'tag-gray'; }
-function stLabel(s){ return {aprovado:'Aprovado',pendente:'Pendente',revisao:'Em revisão',reprovado:'Reprovado',agendado:'Agendado'}[s]||s; }
+function stTag(s){ return {aprovado:'tag-green',pendente:'tag-amber',revisao:'tag-red',reprovado:'tag-red'}[s]||'tag-gray'; }
+function stLabel(s){ return {aprovado:'Aprovado',pendente:'Pendente',revisao:'Em revisão',reprovado:'Reprovado'}[s]||s; }
 function tIcon(t){ return ''; }  // returns empty — type name shown directly
 
 // ── INSTAGRAM-STYLE CAROUSEL SLIDER ──
@@ -4080,209 +4064,6 @@ function showNotif(msg, type='success'){
  n.textContent=msg; n.className=`notif ${type} show`;
  notifTimer=setTimeout(()=>n.classList.remove('show'),3500);
 }
-
-
-// ══════════════════════════════════════════════════════
-// AGENDAMENTO — Fila de aprovados aguardando data/hora
-// ══════════════════════════════════════════════════════
-
-function saveN8nApiKey(){
-  const key = document.getElementById('n8n-apikey-input')?.value.trim();
-  if(!key){ showNotif('Cole a API Key do n8n','error'); return; }
-  localStorage.setItem('n8n_api_key', key);
-  showNotif('API Key do n8n salva!','success');
-}
-
-function rCollabScheduling(c){
-  const posts = DB.posts.filter(p => p.status === 'aprovado' && !p.scheduledViaN8n);
-  updateSchedBadge();
-
-  c.innerHTML = `
-  <div class="fade-up">
-    <div class="sh">
-      <h2>Agendamento</h2>
-      <div class="sh-right"><span style="font-size:13px;color:var(--text-2);">${posts.length} post${posts.length!==1?'s':''} aguardando agendamento</span></div>
-    </div>
-    ${posts.length === 0
-      ? `<div class="empty"><p>Nenhum post aguardando agendamento.</p><p style="font-size:13px;color:var(--text-3);margin-top:6px;">Quando um membro aprovar um post, ele aparecerá aqui para você definir a data e hora.</p></div>`
-      : posts.map(p => schedCard(p)).join('')
-    }
-  </div>`;
-}
-
-function schedCard(p){
-  const owner = DB.users.find(u => u.id === p.userId);
-  const th = p.driveUrl ? driveThumb(p.driveUrl) : '';
-  const isScheduled = p.scheduledViaN8n === true;
-  const n8nExecId = p.n8nExecutionId || '';
-
-  return `
-  <div class="card" id="sched-card-${p.id}" style="margin-bottom:16px;display:grid;grid-template-columns:160px 1fr;gap:24px;align-items:start;">
-    <div>
-      ${th ? `<img src="${th}" style="width:100%;border-radius:var(--r-sm);display:block;" alt="">` : `<div style="width:100%;aspect-ratio:4/5;background:var(--surface-2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);"><span style="font-size:11px;color:var(--text-3);">Sem preview</span></div>`}
-    </div>
-    <div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
-        <span class="tag ${p.scheduledViaN8n ? 'tag-green' : 'tag-blue'}">${p.scheduledViaN8n ? 'Agendado' : 'Ag. agendamento'}</span>
-        <span class="tag tag-gray">${p.type||'imagem'}</span>
-        ${owner ? `<span style="font-size:12px;color:var(--text-2);">@${owner.igHandle||owner.name}</span>` : ''}
-      </div>
-      <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:14px;max-height:80px;overflow:hidden;">${(p.caption||'').substring(0,180)}${(p.caption||'').length>180?'…':''}</div>
-
-      ${!isScheduled ? `
-      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:12px;">
-        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;">Definir data e hora de publicação</div>
-        <div style="display:grid;grid-template-columns:1fr 130px 1fr;gap:10px;align-items:end;">
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">Data</label>
-            <input class="form-input" type="date" id="sched-date-${p.id}">
-          </div>
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">Horário</label>
-            <input class="form-input" type="time" id="sched-time-${p.id}" value="09:00">
-          </div>
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">Dia da semana</label>
-            <input class="form-input" id="sched-day-${p.id}" readonly style="background:var(--surface-3);color:var(--text-2);cursor:default;" oninput="">
-          </div>
-        </div>
-        <div style="margin-top:10px;">
-          <button class="btn btn-cream btn-sm" onclick="confirmarAgendamento('${p.id}')">Agendar no n8n</button>
-          <button class="btn btn-ghost btn-sm" onclick="voltarParaAprovacao('${p.id}')" style="margin-left:6px;">Cancelar aprovação</button>
-        </div>
-      </div>` : `
-      <div style="background:var(--green-bg);border:1px solid rgba(74,140,106,.25);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:12px;">
-        <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Agendado no n8n</div>
-        <div style="font-size:13px;color:var(--text-2);">${p.date||''} às ${p.time||''}</div>
-        ${n8nExecId ? `<div style="font-size:11px;color:var(--text-3);margin-top:4px;">Execução n8n: ${n8nExecId}</div>` : ''}
-      </div>
-      <button class="btn btn-ghost btn-sm" style="border-color:var(--red);color:var(--red);" onclick="cancelarAgendamento('${p.id}')">Cancelar publicação</button>
-      `}
-    </div>
-  </div>`;
-}
-
-// Auto-preenche dia da semana ao mudar a data
-document.addEventListener('change', function(e){
-  const id = e.target.id;
-  if(!id || !id.startsWith('sched-date-')) return;
-  const postId = id.replace('sched-date-','');
-  const val = e.target.value;
-  const dayEl = document.getElementById('sched-day-'+postId);
-  if(dayEl && val) dayEl.value = WEEKDAYS[new Date(val+'T12:00:00').getDay()]||'';
-});
-
-async function confirmarAgendamento(postId){
-  const p = DB.posts.find(x => x.id === postId);
-  if(!p) return;
-
-  const dateInput = document.getElementById('sched-date-'+postId);
-  const timeInput = document.getElementById('sched-time-'+postId);
-  if(!dateInput?.value){ showNotif('Selecione a data de publicação','error'); return; }
-
-  const d = new Date(dateInput.value+'T12:00:00');
-  const dateStr = d.toLocaleDateString('pt-BR'); // DD/MM/YYYY
-  const timeStr = timeInput?.value || '09:00';
-
-  p.date = dateStr;
-  p.time = timeStr;
-  p.scheduledAt = dateStr;
-  p.scheduledTime = timeStr;
-
-  const token = getFBToken();
-  const owner = DB.users.find(u => u.id === p.userId);
-  let igId = owner?.igAccountId || '';
-
-  if(!token){ showNotif('Token do Facebook não configurado em Configurações.','error'); return; }
-  if(!igId){ showNotif('Instagram não vinculado a este membro. Edite o membro nas configurações.','error'); return; }
-
-  const n8nWebhook = localStorage.getItem('n8n_webhook_url')||'';
-  if(!n8nWebhook){ showNotif('URL do webhook n8n não configurada em Configurações.','error'); return; }
-
-  const mediaUrl = publicDriveUrl(p.driveUrl||'');
-  const slideUrls = (p.driveUrls||[]).filter(Boolean).map(u=>publicDriveUrl(u));
-
-  const payload = {
-    postId: p.id, igAccountId: igId, fbToken: token,
-    type: p.type, mediaUrl, slideUrls,
-    coverUrl: publicDriveUrl(p.coverUrl||''),
-    caption: p.caption||'', date: dateStr, time: timeStr,
-    memberName: owner?.name||'', igHandle: owner?.igHandle||''
-  };
-
-  showNotif('Enviando para o n8n...','info');
-  try {
-    const res = await fetch(n8nWebhook, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    if(!res.ok) throw new Error('n8n retornou ' + res.status);
-
-    let execId = '';
-    try { const data = await res.json(); execId = data.executionId || data.id || ''; } catch(e){}
-
-    p.n8nExecutionId = execId;
-    p.scheduledViaN8n = true;
-    saveDB();
-    updateSchedBadge();
-    showNotif(`Post agendado para ${dateStr} às ${timeStr}!`,'success');
-    // Refresh the scheduling tab
-    const c = document.getElementById('c-content') || document.getElementById('h-content');
-    if(c) rCollabScheduling(c);
-  } catch(e){
-    showNotif('Erro ao contatar o n8n: ' + e.message,'error');
-  }
-}
-
-async function cancelarAgendamento(postId){
-  const p = DB.posts.find(x => x.id === postId);
-  if(!p) return;
-  if(!confirm('Cancelar a publicação agendada deste post?')) return;
-
-  const execId = p.n8nExecutionId;
-  const apiKey = localStorage.getItem('n8n_api_key')||'';
-  const n8nBase = (localStorage.getItem('n8n_webhook_url')||'').split('/webhook')[0];
-
-  // Try to cancel n8n execution
-  if(execId && apiKey && n8nBase){
-    try {
-      await fetch(`${n8nBase}/api/v1/executions/${execId}/stop`, {
-        method: 'POST',
-        headers: { 'X-N8N-API-KEY': apiKey, 'Content-Type': 'application/json' }
-      });
-      showNotif('Execução no n8n cancelada.','info');
-    } catch(e){
-      showNotif('Aviso: não foi possível cancelar no n8n (' + e.message + '). Post revertido localmente.','warning');
-    }
-  } else if(!apiKey){
-    showNotif('API Key do n8n não configurada — post revertido localmente apenas.','warning');
-  }
-
-  p.status = 'pendente';
-  p.n8nExecutionId = '';
-  p.scheduledViaN8n = false;
-  p.scheduledAt = '';
-  p.scheduledTime = '';
-  p.date = p.date || '';
-  saveDB();
-  updateSchedBadge();
-  const c = document.getElementById('c-content') || document.getElementById('h-content');
-  if(c) rCollabScheduling(c);
-}
-
-function voltarParaAprovacao(postId){
-  const p = DB.posts.find(x => x.id === postId);
-  if(!p) return;
-  if(!confirm('Devolver para pendente? O membro precisará aprovar novamente.')) return;
-  p.status = 'pendente';
-  p.revisionNote = '';
-  saveDB();
-  updateSchedBadge();
-  const c = document.getElementById('c-content') || document.getElementById('h-content');
-  if(c) rCollabScheduling(c);
-  showNotif('Post devolvido para pendente.','info');
-}
-
 </script>
 </body>
 </html>
