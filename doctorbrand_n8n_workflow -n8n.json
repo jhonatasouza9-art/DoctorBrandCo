@@ -1,0 +1,373 @@
+{
+  "name": "DoctorBrand - Publicar Instagram",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## DoctorBrand — Publicar Instagram\n\n**Fluxo:**\n1. Webhook recebe o post aprovado\n2. Code converte data/hora para ISO\n3. Wait aguarda até a data/hora exata (modo: At Specific Time)\n4. HTTP Request cria container\n5. Code aguarda FINISHED\n6. HTTP Request publica\n\n**O browser pode ser fechado após o post ser aprovado.**\n**O n8n publica no horário certo automaticamente.**\n\n**Payload esperado (POST body):**\n```json\n{\n  \"igAccountId\": \"17841...\",\n  \"fbToken\": \"EAAx...\",\n  \"type\": \"imagem\",\n  \"mediaUrl\": \"https://dropbox.com/s/xxx.jpg?dl=1\",\n  \"slideUrls\": [],\n  \"coverUrl\": \"\",\n  \"caption\": \"Legenda...\",\n  \"date\": \"18/04/2026\",\n  \"time\": \"09:00\"\n}\n```",
+        "height": 500,
+        "width": 380,
+        "color": 7
+      },
+      "id": "5a5a67a5-6916-49f8-9859-a8dafc7241cd",
+      "name": "Documentação",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "doctorbrand-instagram",
+        "options": {}
+      },
+      "id": "7f194773-c66f-4410-a7ff-aed4d89a4e8a",
+      "name": "Receber Post Aprovado",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        240
+      ],
+      "webhookId": "doctorbrand-instagram"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai dados e converte data/hora BR para ISO 8601 com fuso de Brasília (-03:00)\nconst body = $input.first().json.body || $input.first().json;\n\nconst dateStr = body.date || '';\nconst timeStr = body.time || '09:00';\n\n// Converte DD/MM/YYYY + HH:MM → ISO com offset de Brasília\n// SEM o -03:00 o n8n interpretaria como UTC (3h adiantado)\nlet scheduleISO = '';\nif (dateStr && dateStr !== 'A definir') {\n  const parts = dateStr.split('/');\n  if (parts.length === 3) {\n    scheduleISO = `${parts[2]}-${parts[1]}-${parts[0]}T${timeStr}:00-03:00`;\n  }\n}\n\n// Se a data já passou (em BRT) ou não foi definida, publica em 30 segundos\nif (!scheduleISO || new Date(scheduleISO) <= new Date()) {\n  const soon = new Date(Date.now() + 30000);\n  scheduleISO = soon.toISOString(); // já vem em UTC, o n8n entende\n}\n\nreturn [{\n  json: {\n    igAccountId:  body.igAccountId  || '',\n    fbToken:      body.fbToken      || '',\n    type:         body.type         || 'imagem',\n    mediaUrl:     body.mediaUrl     || '',\n    slideUrls:    body.slideUrls    || [],\n    coverUrl:     body.coverUrl     || '',\n    caption:      body.caption      || '',\n    scheduleISO\n  }\n}];"
+      },
+      "id": "2286c6ab-0522-4e40-a940-b1716ce8f68f",
+      "name": "Preparar Dados",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{ $json.scheduleISO }}"
+      },
+      "id": "ab385b35-aa09-45d3-a229-ab359dedc728",
+      "name": "Aguardar até Data e Hora",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1840,
+        240
+      ],
+      "webhookId": "wait-doctorbrand"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "cond-carrossel",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "carrossel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "carrossel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "cond-reels",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "reels",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reels"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "425c01c0-3955-4cf2-848e-3283e09ad4f9",
+      "name": "Tipo do Post",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2064,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Carrossel: cria um container para cada slide, depois cria o container do carrossel\nconst { igAccountId, fbToken, slideUrls, caption } = $input.first().json;\n\nif (!slideUrls || slideUrls.length === 0) {\n  throw new Error('Carrossel sem slides. Verifique se o post tem URLs de imagens.');\n}\n\n// Passo 1: criar container para cada slide individualmente\nconst childIds = [];\nfor (let i = 0; i < slideUrls.length; i++) {\n  const url = slideUrls[i];\n  if (!url) continue;\n\n  const res = await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://graph.facebook.com/v22.0/${igAccountId}/media`,\n    qs: { access_token: fbToken },\n    body: {\n      image_url: url,\n      is_carousel_item: 'true',\n      access_token: fbToken\n    },\n    json: true\n  });\n\n  if (res.error) {\n    throw new Error(`Slide ${i + 1}: ${res.error.message}`);\n  }\n  if (!res.id) {\n    throw new Error(`Slide ${i + 1}: sem ID retornado. Verifique se a URL é pública: ${url}`);\n  }\n  childIds.push(res.id);\n}\n\nif (childIds.length === 0) {\n  throw new Error('Nenhum slide válido processado.');\n}\n\n// Passo 2: criar container do carrossel com os IDs dos slides\nconst carousel = await this.helpers.httpRequest({\n  method: 'POST',\n  url: `https://graph.facebook.com/v22.0/${igAccountId}/media`,\n  qs: { access_token: fbToken },\n  body: {\n    media_type: 'CAROUSEL',\n    children: childIds.join(','),\n    caption: caption || '',\n    access_token: fbToken\n  },\n  json: true\n});\n\nif (carousel.error) {\n  throw new Error(`Carrossel: ${carousel.error.message}`);\n}\n\nreturn [{ json: { id: carousel.id, fbToken, igAccountId } }];"
+      },
+      "id": "0eab6ff5-4082-4a77-90b0-5307e1685ddb",
+      "name": "Criar Container Carrossel",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v22.0/{{ $json.igAccountId }}/media",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $json.mediaUrl }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.caption }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.fbToken }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bc754da8-761b-4c52-83b6-26156928f3dd",
+      "name": "Criar Container Imagem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2272,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v22.0/{{ $json.igAccountId }}/media",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "media_type",
+              "value": "REELS"
+            },
+            {
+              "name": "video_url",
+              "value": "={{ $json.mediaUrl }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.caption }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.fbToken }}"
+            },
+            {
+              "name": "cover_url",
+              "value": "={{ $json.coverUrl || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ee134d2e-bb48-4d1b-8c4a-a55a76025658",
+      "name": "Criar Container Reels",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2272,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aguarda o container ficar FINISHED (máx 60s — 20x com intervalo de 3s)\nconst containerId = $input.first().json.id;\n\n// Pega token e igAccountId dos dados que vieram do Preparar Dados\n// O Switch preserva o item original, então pegamos do nó anterior na cadeia\nconst data = $input.first().json;\nconst fbToken = data.fbToken || $('Preparar Dados').first().json.fbToken;\nconst igAccountId = data.igAccountId || $('Preparar Dados').first().json.igAccountId;\n\nif (!containerId) {\n  throw new Error('Container ID não encontrado. Verifique se o token é válido e a URL da mídia está acessível (use Dropbox com dl=1).');\n}\n\nlet statusCode = '';\nfor (let i = 0; i < 20; i++) {\n  await new Promise(r => setTimeout(r, 3000));\n  const res = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://graph.facebook.com/v22.0/${containerId}`,\n    qs: { fields: 'status_code,status', access_token: fbToken }\n  });\n  statusCode = res.status_code || '';\n  if (statusCode === 'FINISHED') break;\n  if (statusCode === 'ERROR') {\n    throw new Error(`Instagram rejeitou a mídia: ${res.status || 'formato inválido'}. Use JPG/PNG para imagens e MP4 para vídeos. A URL deve ser pública (use Dropbox com dl=1).`);\n  }\n}\n\nif (statusCode !== 'FINISHED') {\n  throw new Error('Tempo esgotado (60s). Arquivo muito grande ou formato não suportado.');\n}\n\nreturn [{ json: { containerId, fbToken, igAccountId } }];"
+      },
+      "id": "3bdbc3ea-6810-4c8f-bbf4-9cae602d5c78",
+      "name": "Aguardar Processamento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v22.0/{{ $json.igAccountId }}/media_publish",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $json.containerId }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.fbToken }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "61c4541c-1415-4927-ba81-22b0fd0d5b29",
+      "name": "Publicar no Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2736,
+        240
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receber Post Aprovado": {
+      "main": [
+        [
+          {
+            "node": "Preparar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Dados": {
+      "main": [
+        [
+          {
+            "node": "Aguardar até Data e Hora",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aguardar até Data e Hora": {
+      "main": [
+        [
+          {
+            "node": "Tipo do Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tipo do Post": {
+      "main": [
+        [
+          {
+            "node": "Criar Container Carrossel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Container Reels",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Container Imagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Container Carrossel": {
+      "main": [
+        [
+          {
+            "node": "Aguardar Processamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Container Imagem": {
+      "main": [
+        [
+          {
+            "node": "Aguardar Processamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Container Reels": {
+      "main": [
+        [
+          {
+            "node": "Aguardar Processamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aguardar Processamento": {
+      "main": [
+        [
+          {
+            "node": "Publicar no Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "15233d24-9b39-403c-801b-32e6535c051e",
+  "meta": {
+    "instanceId": "d06966583a7305dd6a980f9612a5f6d2a2d1a08197437695fd61e4b5f9d95527"
+  },
+  "id": "nj9bYLL5DQ70aAko",
+  "tags": []
+}
