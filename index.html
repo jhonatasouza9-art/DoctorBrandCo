@@ -822,6 +822,7 @@ img, svg, input, textarea, select, button {
  <div class="sb-section">
  <div class="sb-label">Colaborador</div>
  <div class="nav-item active" id="cn-revisions" onclick="cTab('revisions',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Revisões Pendentes<span class="nav-badge" id="c-rev-badge">0</span></div>
+      <div class="nav-item" id="cn-scheduling" onclick="cTab('scheduling',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agendamento<span class="nav-badge" id="cn-sched-badge" style="display:none"></span></div>
  <div class="nav-item" id="cn-done" onclick="cTab('done',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Revisões Concluídas</div>
  <div class="nav-item" id="cn-briefings" onclick="cTab('briefings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Briefings dos Clientes</div>
  </div>
@@ -861,7 +862,8 @@ img, svg, input, textarea, select, button {
  <div class="nav-item" onclick="hTab('collaborators',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Colaboradores</div>
  <div class="nav-item" onclick="hTab('posts',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Todos os Posts</div>
  <div class="nav-item" onclick="hTab('analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</div>
- <div class="nav-item" onclick="hTab('settings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Configurações</div>
+ <div class="nav-item" id="hn-scheduling" onclick="hTab('scheduling',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agendamento<span class="nav-badge" id="hn-sched-badge" style="display:none"></span></div>
+      <div class="nav-item" onclick="hTab('settings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Configurações</div>
  <div class="nav-item" onclick="hTab('briefings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Briefings</div>
  </div>
  <div class="sb-spacer"></div>
@@ -1013,7 +1015,15 @@ function showMember(){
  });
  mTab('home', document.getElementById('mn-home'));
 }
-function updateSchedBadge(){ /* scheduling tab removido — aprovação vai direto ao Instagram */ }
+function updateSchedBadge(){
+  const count = DB.posts.filter(p => p.status === 'aprovado' && !p.scheduledViaN8n).length;
+  ['cn-sched-badge','hn-sched-badge'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(count > 0){ el.textContent = count; el.style.display = 'inline-flex'; }
+    else { el.style.display = 'none'; }
+  });
+}
 function mTab(tab, el){
  closeSb('member');
  document.querySelectorAll('#page-member .nav-item').forEach(x=>x.classList.remove('active'));
@@ -1260,6 +1270,7 @@ function planningRow(p, num){
         </div>
         <div style="font-size:16px;font-weight:600;color:var(--cream);margin-top:6px;letter-spacing:.1px;">
           ${p.date || 'xx/xx'}${dayName ? ' &bull; ' + dayName : ''}${timeStr ? ' &bull; ' + timeStr : ''}
+          ${(CU.role === 'headops' || CU.role === 'collaborator') ? `<button onclick="editPostDateTime('${p.id}')" title="Editar data/hora" style="background:transparent;border:none;cursor:pointer;color:var(--text-2);padding:2px 6px;margin-left:6px;font-size:13px;vertical-align:middle;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--text-2)'">✎</button>` : ''}
         </div>
       </div>
 
@@ -1367,37 +1378,24 @@ function handlePlanCheck(id, action, event){
   }
 
   if(action === 'aprovado'){
+    const dateStr = p.date && p.date !== 'A definir' ? p.date : '';
+    const timeStr = p.time || p.scheduledTime || '';
+    let msg = 'Confirmar aprovação deste post?';
+    if(dateStr && timeStr){
+      msg = 'Confirmar aprovação?\n\nO post será programado para ' + dateStr + ' às ' + timeStr + '.\nO colaborador precisará clicar em "Programar" na aba Agendamento para enviar ao n8n.';
+    }
+    if(!confirm(msg)){
+      // Remove o checkbox marcado visualmente — re-renderiza
+      mTab('planning', document.getElementById('mn-planning'));
+      return;
+    }
     p.status      = 'aprovado';
     p.revisionNote = '';
     p.revisionType = '';
     p.revisionDone = false;
-    if(p.date && p.date !== 'A definir'){
-      p.scheduledAt   = p.date;
-      p.scheduledTime = p.time || p.scheduledTime || '09:00';
-    }
     saveDB();
-
-    // Verifica se deve publicar agora ou agendar
-    const schedMs = _getScheduleMs(p);
-    const nowMs   = Date.now();
-    const diffMin = schedMs ? Math.round((schedMs - nowMs) / 60000) : 0;
-    const n8nConfigured = !!(localStorage.getItem('n8n_webhook_url') || '');
-
-    if(!schedMs || schedMs <= nowMs + 60000){
-      // Data no passado ou menos de 1 minuto → publica imediatamente
-      simulateInstagramPublish(p);
-    } else if(n8nConfigured){
-      // n8n configurado → envia IMEDIATAMENTE para o servidor; ele aguarda o horário
-      simulateInstagramPublish(p);
-    } else {
-      // Sem n8n → fallback: usa setTimeout no browser (aba precisa ficar aberta)
-      _schedulePost(p, schedMs);
-      showNotif(
-        'Post aprovado e agendado para ' + p.scheduledAt + ' às ' + p.scheduledTime +
-        ' (' + _formatCountdown(schedMs - nowMs) + '). Mantenha esta aba aberta.',
-        'success'
-      );
-    }
+    updateSchedBadge();
+    showNotif('Post aprovado! Colaborador irá programar a publicação.', 'success');
     mTab('planning', document.getElementById('mn-planning'));
     return;
   }
@@ -1651,9 +1649,14 @@ function setPF(k, v){ pFilter[k] = v; mTab('planning', document.getElementById('
 
 function approvePost(id){
   const p = DB.posts.find(x => x.id === id);
-  if(p){ p.status='aprovado'; p.revisionNote=''; p.revisionDone=false; saveDB();
-    mTab('planning', document.getElementById('mn-planning'));
-    showNotif('Post aprovado!', 'success'); updateSchedBadge(); }
+  if(!p) return;
+  p.status = 'aprovado';
+  p.revisionNote = '';
+  p.revisionDone = false;
+  saveDB();
+  updateSchedBadge();
+  mTab('planning', document.getElementById('mn-planning'));
+  showNotif('Post aprovado! Colaborador irá agendar a publicação.', 'success');
 }
 
 // ── Revisão modal legado (mantido para compatibilidade) ──
@@ -2483,6 +2486,7 @@ function showCollab(){
  document.getElementById('c-name').textContent=CU.name;
  document.getElementById('c-av').textContent=CU.name[0];
  updateCollabBadge();
+ updateSchedBadge();
  cTab('revisions', document.getElementById('cn-revisions'));
 }
 function updateCollabBadge(){
@@ -2494,13 +2498,14 @@ function cTab(tab, el){
  closeSb('collab');
  document.querySelectorAll('#page-collab .nav-item').forEach(x=>x.classList.remove('active'));
  if(el) el.classList.add('active');
- const titles={revisions:'Revisões Pendentes',done:'Revisões Concluídas',briefings:'Briefings dos Clientes'};
+ const titles={revisions:'Revisões Pendentes',done:'Revisões Concluídas',briefings:'Briefings dos Clientes',scheduling:'Agendamento'};
  document.getElementById('c-tb-title').textContent = titles[tab]||tab;
  const c=document.getElementById('c-content');
  c.innerHTML='';
  if(tab==='revisions') rCollabRevisions(c);
  else if(tab==='done') rCollabDone(c);
  else if(tab==='briefings') rCollabBriefings(c);
+ else if(tab==='scheduling') rCollabScheduling(c);
 }
 function rCollabRevisions(c){
   const pending = DB.posts.filter(p => p.status === 'revisao' && !p.revisionDone);
@@ -2522,7 +2527,7 @@ function rCollabRevisions(c){
         <div class="revision-item-hdr">
           <div>
             <div class="revision-item-title">${p.title}</div>
-            <div class="revision-item-meta">${owner?.name||'—'} · ${p.type} · ${p.date}</div>
+            <div class="revision-item-meta">${owner?.name||'—'} · ${p.type} · <span onclick="editPostDateTime('${p.id}')" style="cursor:pointer;border-bottom:1px dashed var(--text-3);" title="Editar">${p.date}${p.time?' · '+p.time:''}</span></div>
           </div>
           <span class="tag tag-amber">${revLabel}</span>
         </div>
@@ -2609,12 +2614,12 @@ function markRevisionDone(id){
 // 
 // HEAD OPS AREA
 // 
-function showHeadOps(){ showPage('page-headops'); hTab('members',document.querySelector('#page-headops .nav-item')); }
+function showHeadOps(){ showPage('page-headops'); updateSchedBadge(); hTab('members',document.querySelector('#page-headops .nav-item')); }
 function hTab(tab,el){
  closeSb('headops');
  document.querySelectorAll('#page-headops .nav-item').forEach(x=>x.classList.remove('active'));
  if(el) el.classList.add('active');
- const titles={members:'Membros (Médicos)',collaborators:'Colaboradores',posts:'Todos os Posts',analytics:'Analytics',settings:'Configurações',briefings:'Briefings dos Clientes'};
+ const titles={members:'Membros (Médicos)',collaborators:'Colaboradores',posts:'Todos os Posts',analytics:'Analytics',settings:'Configurações',briefings:'Briefings dos Clientes',scheduling:'Agendamento'};
  document.getElementById('h-tb-title').textContent=titles[tab]||tab;
  const c=document.getElementById('h-content');
  c.innerHTML='';
@@ -2624,6 +2629,7 @@ function hTab(tab,el){
  else if(tab==='analytics') rHAnalytics(c);
  else if(tab==='settings') rHSettings(c);
  else if(tab==='briefings') rHBriefings(c);
+ else if(tab==='scheduling') rCollabScheduling(c);
 }
 function rHMembers(c){
  const members=DB.users.filter(u=>u.role==='member');
@@ -2697,7 +2703,7 @@ function rHPosts(c){
  <td><span style="font-size:12px;color:var(--text-2);">${u?.name||'—'}</span></td>
  <td>${p.type.charAt(0).toUpperCase()+p.type.slice(1)}</td>
  <td><span class="tag ${stTag(p.status)}">${stLabel(p.status)}</span></td>
- <td style="font-size:12px;color:var(--text-2);">${p.date}</td>
+ <td style="font-size:12px;color:var(--text-2);"><span onclick="editPostDateTime('${p.id}')" style="cursor:pointer;border-bottom:1px dashed var(--text-3);padding-bottom:1px;" title="Clique para editar">${p.date}${p.time?' · '+p.time:''}</span></td>
  <td>${p.revisionNote?`<span class="tag tag-amber"> Sim</span>`:'<span class="tag tag-gray">—</span>'}</td>
  <td><div style="display:flex;gap:4px;flex-wrap:wrap;">
  ${p.status!=='aprovado'?`<button class="btn btn-green btn-xs" onclick="hApprove('${p.id}')">Aprovar</button>`:''}
@@ -2861,6 +2867,14 @@ function rHSettings(c){
         ${localStorage.getItem('n8n_webhook_url')?`<button class="btn btn-ghost btn-sm" onclick="testN8nWebhook()">Testar</button>`:''}
       </div>
       ${localStorage.getItem('n8n_webhook_url')?`<div style="margin-top:8px;font-size:11px;color:var(--green);">Webhook ativo — posts aprovados serão enviados automaticamente para o n8n.</div>`:''}
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-soft);">
+        <div style="font-size:12px;font-weight:600;color:var(--cream);margin-bottom:6px;">API Key do n8n (para cancelar agendamentos)</div>
+        <div style="font-size:11.5px;color:var(--text-2);margin-bottom:8px;">Gere em: n8n → Settings → n8n API → Create API Key</div>
+        <div style="display:flex;gap:8px;">
+          <input class="form-input" id="n8n-apikey-input" placeholder="eyJhbGciOiJIUzI1NiIs..." type="password" style="flex:1;font-size:13px;">
+          <button class="btn btn-ghost btn-sm" onclick="saveN8nApiKey()">Salvar</button>
+        </div>
+      </div>
     </div>
 
     <!-- Senha -->
@@ -2888,6 +2902,10 @@ function rHSettings(c){
       <button class="btn btn-red btn-sm" onclick="resetDB()">Resetar todos os dados</button>
     </div>
   </div>`;
+  // Pre-fill API key input if saved
+  const _k = localStorage.getItem('n8n_api_key');
+  const _ki = document.getElementById('n8n-apikey-input');
+  if (_k && _ki) _ki.value = _k;
 }
 function saveN8nWebhook(){
   const url = document.getElementById('n8n-webhook-input')?.value.trim();
@@ -3855,8 +3873,8 @@ function publicDriveUrl(url){
   return url;
 }
 
-function stTag(s){ return {aprovado:'tag-green',pendente:'tag-amber',revisao:'tag-red',reprovado:'tag-red'}[s]||'tag-gray'; }
-function stLabel(s){ return {aprovado:'Aprovado',pendente:'Pendente',revisao:'Em revisão',reprovado:'Reprovado'}[s]||s; }
+function stTag(s){ return {aprovado:'tag-green',pendente:'tag-amber',revisao:'tag-red',reprovado:'tag-red',agendado:'tag-blue'}[s]||'tag-gray'; }
+function stLabel(s){ return {aprovado:'Aprovado',pendente:'Pendente',revisao:'Em revisão',reprovado:'Reprovado',agendado:'Agendado'}[s]||s; }
 function tIcon(t){ return ''; }  // returns empty — type name shown directly
 
 // ── INSTAGRAM-STYLE CAROUSEL SLIDER ──
@@ -4064,6 +4082,300 @@ function showNotif(msg, type='success'){
  n.textContent=msg; n.className=`notif ${type} show`;
  notifTimer=setTimeout(()=>n.classList.remove('show'),3500);
 }
+
+// ═══════════════════════════════════════════════════════════
+// AGENDAMENTO — Fila de posts aprovados aguardando data/hora
+// ═══════════════════════════════════════════════════════════
+
+function saveN8nApiKey(){
+  const key = document.getElementById('n8n-apikey-input');
+  if(!key) return;
+  const val = key.value.trim();
+  if(!val){ showNotif('Cole a API Key do n8n','error'); return; }
+  localStorage.setItem('n8n_api_key', val);
+  showNotif('API Key do n8n salva!','success');
+}
+
+function rCollabScheduling(c){
+  const posts = DB.posts.filter(p => p.status === 'aprovado' && !p.scheduledViaN8n);
+  const scheduled = DB.posts.filter(p => p.scheduledViaN8n === true && p.status === 'aprovado');
+  updateSchedBadge();
+
+  let cardsHtml = '';
+  if(posts.length > 0){
+    cardsHtml += '<div style="margin-bottom:16px;font-size:13px;color:var(--text-2);font-weight:500;">Aguardando agendamento (' + posts.length + ')</div>';
+    cardsHtml += posts.map(p => schedCard(p, false)).join('');
+  }
+  if(scheduled.length > 0){
+    cardsHtml += '<div style="margin:28px 0 16px;font-size:13px;color:var(--text-2);font-weight:500;">Já agendados no n8n (' + scheduled.length + ')</div>';
+    cardsHtml += scheduled.map(p => schedCard(p, true)).join('');
+  }
+  if(posts.length === 0 && scheduled.length === 0){
+    cardsHtml = '<div class="empty"><p>Nenhum post na fila de agendamento.</p><p style="font-size:13px;color:var(--text-3);margin-top:6px;">Quando um membro aprovar um post, ele aparecerá aqui.</p></div>';
+  }
+
+  c.innerHTML = '<div class="fade-up"><div class="sh"><h2>Agendamento</h2></div>' + cardsHtml + '</div>';
+}
+
+function schedCard(p, isScheduled){
+  const owner = DB.users.find(u => u.id === p.userId);
+  const th = p.driveUrl ? driveThumb(p.driveUrl) : '';
+  const ownerName = owner ? (owner.igHandle || owner.name) : '';
+  const captionPreview = (p.caption || '').substring(0, 160);
+
+  let media = '';
+  if(th){
+    media = '<img src="' + th + '" style="width:100%;border-radius:var(--r-sm);display:block;" alt="">';
+  } else {
+    media = '<div style="width:100%;aspect-ratio:4/5;background:var(--surface-2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);"><span style="font-size:11px;color:var(--text-3);">Sem preview</span></div>';
+  }
+
+  let body = '';
+  if(!isScheduled){
+    body = '<div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:12px;">';
+    body += '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;">Definir data e hora da publicação</div>';
+    body += '<div style="display:grid;grid-template-columns:1fr 130px 1fr;gap:10px;">';
+    body += '<div class="form-group" style="margin:0;"><label class="form-label">Data</label><input class="form-input" type="date" id="sched-date-' + p.id + '" onchange="schedUpdateDay(\'' + p.id + '\')"></div>';
+    body += '<div class="form-group" style="margin:0;"><label class="form-label">Horário</label><input class="form-input" type="time" id="sched-time-' + p.id + '" value="09:00"></div>';
+    body += '<div class="form-group" style="margin:0;"><label class="form-label">Dia</label><input class="form-input" id="sched-day-' + p.id + '" readonly style="background:var(--surface-3);color:var(--text-2);"></div>';
+    body += '</div></div>';
+    body += '<button class="btn btn-cream btn-sm" onclick="confirmarAgendamento(\'' + p.id + '\')" id="btn-sched-' + p.id + '">Programar</button>';
+    body += ' <button class="btn btn-ghost btn-sm" onclick="voltarParaAprovacao(\'' + p.id + '\')" style="margin-left:6px;">Devolver ao membro</button>';
+  } else {
+    body = '<div style="background:var(--green-bg);border:1px solid rgba(74,140,106,.25);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:12px;">';
+    body += '<div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Agendado no n8n</div>';
+    body += '<div style="font-size:13px;color:var(--text-2);">' + (p.date || '') + ' às ' + (p.time || '') + '</div>';
+    if(p.n8nExecutionId){
+      body += '<div style="font-size:11px;color:var(--text-3);margin-top:4px;">Execução: ' + p.n8nExecutionId + '</div>';
+    }
+    body += '</div>';
+    body += '<button class="btn btn-ghost btn-sm" style="border-color:var(--red);color:var(--red);" onclick="cancelarAgendamento(\'' + p.id + '\')">Cancelar publicação</button>';
+  }
+
+  const tagClass = isScheduled ? 'tag-green' : 'tag-blue';
+  const tagText = isScheduled ? 'Agendado' : 'Ag. agendamento';
+
+  let html = '<div class="card" style="margin-bottom:16px;display:grid;grid-template-columns:160px 1fr;gap:24px;align-items:start;">';
+  html += '<div>' + media + '</div>';
+  html += '<div>';
+  html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">';
+  html += '<span class="tag ' + tagClass + '">' + tagText + '</span>';
+  html += '<span class="tag tag-gray">' + (p.type || 'imagem') + '</span>';
+  if(ownerName) html += '<span style="font-size:12px;color:var(--text-2);">@' + ownerName + '</span>';
+  html += '</div>';
+  html += '<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:14px;">' + captionPreview + ((p.caption || '').length > 160 ? '…' : '') + '</div>';
+  html += body;
+  html += '</div></div>';
+  return html;
+}
+
+function schedUpdateDay(postId){
+  const dateEl = document.getElementById('sched-date-' + postId);
+  const dayEl = document.getElementById('sched-day-' + postId);
+  if(!dateEl || !dayEl || !dateEl.value) return;
+  const d = new Date(dateEl.value + 'T12:00:00');
+  dayEl.value = WEEKDAYS[d.getDay()] || '';
+}
+
+async function confirmarAgendamento(postId){
+  const p = DB.posts.find(x => x.id === postId);
+  if(!p) return;
+
+  // Previne clique duplicado
+  if(p._scheduling) return;
+
+  const dateEl = document.getElementById('sched-date-' + postId);
+  const timeEl = document.getElementById('sched-time-' + postId);
+  if(!dateEl || !dateEl.value){ showNotif('Selecione a data','error'); return; }
+
+  const d = new Date(dateEl.value + 'T12:00:00');
+  const dateStr = d.toLocaleDateString('pt-BR');
+  const timeStr = timeEl && timeEl.value ? timeEl.value : '09:00';
+  const dayName = WEEKDAYS[d.getDay()] || '';
+
+  // Alerta de confirmação
+  const msg = 'Programar este post para ' + dateStr + ' (' + dayName + ') às ' + timeStr + '?\n\nO n8n aguardará até esse horário e publicará automaticamente no Instagram.';
+  if(!confirm(msg)) return;
+
+  // Lock + desabilita botão imediatamente
+  p._scheduling = true;
+  const btn = document.getElementById('btn-sched-' + postId);
+  if(btn){ btn.disabled = true; btn.textContent = 'Enviando...'; btn.style.opacity = '0.6'; }
+
+  p.date = dateStr;
+  p.time = timeStr;
+  p.scheduledAt = dateStr;
+  p.scheduledTime = timeStr;
+
+  const token = getFBToken();
+  const owner = DB.users.find(u => u.id === p.userId);
+  const igId = owner ? owner.igAccountId || '' : '';
+
+  const releaseLock = () => {
+    delete p._scheduling;
+    if(btn){ btn.disabled = false; btn.textContent = 'Programar'; btn.style.opacity = '1'; }
+  };
+
+  if(!token){ showNotif('Token do Facebook não configurado','error'); releaseLock(); return; }
+  if(!igId){ showNotif('Instagram não vinculado a este membro','error'); releaseLock(); return; }
+
+  const webhook = localStorage.getItem('n8n_webhook_url') || '';
+  if(!webhook){ showNotif('URL do webhook n8n não configurada','error'); releaseLock(); return; }
+
+  const mediaUrl = publicDriveUrl(p.driveUrl || '');
+  const slideUrls = (p.driveUrls || []).filter(Boolean).map(u => publicDriveUrl(u));
+
+  const payload = {
+    postId: p.id, igAccountId: igId, fbToken: token,
+    type: p.type, mediaUrl: mediaUrl, slideUrls: slideUrls,
+    coverUrl: publicDriveUrl(p.coverUrl || ''),
+    caption: p.caption || '', date: dateStr, time: timeStr,
+    memberName: owner ? owner.name : '', igHandle: owner ? owner.igHandle || '' : ''
+  };
+
+  try {
+    const res = await fetch(webhook, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('n8n retornou ' + res.status);
+    let execId = '';
+    try { const data = await res.json(); execId = data.executionId || data.id || ''; } catch(e){}
+
+    p.n8nExecutionId = execId;
+    p.scheduledViaN8n = true;
+    delete p._scheduling;
+    saveDB();
+    updateSchedBadge();
+    showNotif('Post programado para ' + dateStr + ' às ' + timeStr + '!','success');
+    const cont = document.getElementById('c-content') || document.getElementById('h-content');
+    if(cont) rCollabScheduling(cont);
+  } catch(e){
+    showNotif('Erro no n8n: ' + e.message,'error');
+    releaseLock();
+  }
+}
+
+async function cancelarAgendamento(postId){
+  const p = DB.posts.find(x => x.id === postId);
+  if(!p) return;
+  if(!confirm('Cancelar a publicação agendada?')) return;
+
+  const execId = p.n8nExecutionId;
+  const apiKey = localStorage.getItem('n8n_api_key') || '';
+  const webhook = localStorage.getItem('n8n_webhook_url') || '';
+  const n8nBase = webhook.split('/webhook')[0];
+
+  if(execId && apiKey && n8nBase){
+    try {
+      await fetch(n8nBase + '/api/v1/executions/' + execId + '/stop', {
+        method: 'POST',
+        headers: {'X-N8N-API-KEY': apiKey, 'Content-Type':'application/json'}
+      });
+      showNotif('Execução cancelada no n8n.','info');
+    } catch(e){
+      showNotif('Aviso: não foi possível contatar o n8n (' + e.message + ')','warning');
+    }
+  } else if(!apiKey){
+    showNotif('API Key do n8n não configurada — cancelamento apenas local.','warning');
+  }
+
+  p.status = 'pendente';
+  p.n8nExecutionId = '';
+  p.scheduledViaN8n = false;
+  p.scheduledAt = '';
+  p.scheduledTime = '';
+  saveDB();
+  updateSchedBadge();
+  const cont = document.getElementById('c-content') || document.getElementById('h-content');
+  if(cont) rCollabScheduling(cont);
+}
+
+function voltarParaAprovacao(postId){
+  const p = DB.posts.find(x => x.id === postId);
+  if(!p) return;
+  if(!confirm('Devolver ao membro? O post volta para pendente.')) return;
+  p.status = 'pendente';
+  p.revisionNote = '';
+  saveDB();
+  updateSchedBadge();
+  const cont = document.getElementById('c-content') || document.getElementById('h-content');
+  if(cont) rCollabScheduling(cont);
+  showNotif('Post devolvido.','info');
+}
+
+
+function editPostDateTime(postId){
+  const p = DB.posts.find(x => x.id === postId);
+  if(!p) return;
+  if(CU.role !== 'headops' && CU.role !== 'collaborator'){
+    showNotif('Apenas a equipe pode editar data/hora', 'error');
+    return;
+  }
+  if(p.scheduledViaN8n){
+    showNotif('Post já está agendado no n8n. Cancele o agendamento antes de editar a data.', 'warning');
+    return;
+  }
+
+  // Parse current date (DD/MM/YYYY) to YYYY-MM-DD for input[type=date]
+  let currentDateIso = '';
+  if(p.date && p.date !== 'A definir'){
+    const parts = p.date.split('/');
+    if(parts.length === 3) currentDateIso = parts[2] + '-' + parts[1] + '-' + parts[0];
+  }
+  const currentTime = p.time || p.scheduledTime || '09:00';
+
+  document.getElementById('modal-inner').innerHTML =
+    '<div class="modal-title">Editar data e hora</div>' +
+    '<div class="modal-sub">Ajuste quando este post será publicado</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 130px 1fr;gap:10px;margin-bottom:16px;">' +
+      '<div class="form-group" style="margin:0;"><label class="form-label">Data</label><input class="form-input" type="date" id="edit-date" value="' + currentDateIso + '" onchange="editDateUpdateDay()"></div>' +
+      '<div class="form-group" style="margin:0;"><label class="form-label">Horário</label><input class="form-input" type="time" id="edit-time" value="' + currentTime + '"></div>' +
+      '<div class="form-group" style="margin:0;"><label class="form-label">Dia</label><input class="form-input" id="edit-day" readonly style="background:var(--surface-3);color:var(--text-2);"></div>' +
+    '</div>' +
+    '<div class="modal-footer">' +
+      '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button>' +
+      '<button class="btn btn-cream btn-sm" onclick="saveEditDateTime(\'' + postId + '\')">Salvar</button>' +
+    '</div>';
+  openModal();
+  editDateUpdateDay();
+}
+
+function editDateUpdateDay(){
+  const dateEl = document.getElementById('edit-date');
+  const dayEl = document.getElementById('edit-day');
+  if(!dateEl || !dayEl || !dateEl.value) return;
+  const d = new Date(dateEl.value + 'T12:00:00');
+  dayEl.value = WEEKDAYS[d.getDay()] || '';
+}
+
+function saveEditDateTime(postId){
+  const p = DB.posts.find(x => x.id === postId);
+  if(!p) return;
+  const dateEl = document.getElementById('edit-date');
+  const timeEl = document.getElementById('edit-time');
+  if(!dateEl || !dateEl.value){ showNotif('Selecione a data', 'error'); return; }
+  const d = new Date(dateEl.value + 'T12:00:00');
+  p.date = d.toLocaleDateString('pt-BR');
+  p.time = timeEl && timeEl.value ? timeEl.value : '09:00';
+  p.scheduledAt = p.date;
+  p.scheduledTime = p.time;
+  saveDB();
+  closeModal();
+  showNotif('Data/hora atualizadas!', 'success');
+  // Re-render whichever view is active
+  if(CU.role === 'headops'){
+    const c = document.getElementById('h-content');
+    if(c && c.querySelector('.plan-row')) mTab('planning', document.getElementById('mn-planning'));
+    else hTab('posts', document.querySelectorAll('#page-headops .nav-item')[2]);
+  } else if(CU.role === 'collaborator'){
+    cTab('revisions', document.getElementById('cn-revisions'));
+  } else {
+    mTab('planning', document.getElementById('mn-planning'));
+  }
+}
+
 </script>
 </body>
 </html>
