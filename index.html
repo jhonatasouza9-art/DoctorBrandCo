@@ -2868,11 +2868,16 @@ function rHSettings(c){
       </div>
       ${localStorage.getItem('n8n_webhook_url')?`<div style="margin-top:8px;font-size:11px;color:var(--green);">Webhook ativo — posts aprovados serão enviados automaticamente para o n8n.</div>`:''}
       <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-soft);">
-        <div style="font-size:12px;font-weight:600;color:var(--cream);margin-bottom:6px;">API Key do n8n (para cancelar execuções)</div>
+        <div style="font-size:12px;font-weight:600;color:var(--cream);margin-bottom:6px;">API Key do n8n (para cancelar agendamentos)</div>
         <div style="font-size:11.5px;color:var(--text-2);margin-bottom:8px;">Necessário para cancelar posts agendados. Gere em: n8n → Settings → n8n API → Create API Key</div>
-        <div style="display:flex;gap:8px;"><input class="form-input" id="n8n-apikey-input" placeholder="eyJhbGciOiJIUzI1NiIs..." value="${localStorage.getItem('n8n_api_key')||''}" type="password" style="flex:1;font-size:13px;"><button class="btn btn-ghost btn-sm" onclick="saveN8nApiKey()">Salvar</button></div>
+        <div style="display:flex;gap:8px;">
+          <input class="form-input" id="n8n-apikey-input" placeholder="eyJhbGciOiJIUzI1NiIs..." type="password" style="flex:1;font-size:13px;">
+          <button class="btn btn-ghost btn-sm" onclick="saveN8nApiKey()">Salvar</button>
+        </div>
+        <div id="n8n-apikey-saved" style="margin-top:6px;font-size:11px;color:var(--text-3);display:none;">API Key salva.</div>
       </div>
     </div>`:''}
+  `;
     </div>
 
     <!-- Senha -->
