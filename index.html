@@ -4149,7 +4149,7 @@ function schedCard(p, isScheduled){
     if(p.n8nExecutionId){
       body += '<div style="font-size:11px;color:var(--text-3);margin-top:4px;">Execução n8n: #' + p.n8nExecutionId + '</div>';
     } else {
-      body += '<div style="font-size:11px;color:var(--amber);margin-top:4px;">⚠ Execution ID não vinculado — cancelamento via n8n indisponível. <a href="javascript:void(0)" onclick="_tentarVincularExecId(\'' + p.id + '\')" style="color:var(--cream);text-decoration:underline;">Tentar vincular</a></div>';
+      body += '<div style="font-size:11px;color:var(--text-3);margin-top:4px;">Execution ID não vinculado (cancelamento ainda funciona via postId)</div>';
     }
     body += '</div>';
     body += '<button class="btn btn-ghost btn-sm" style="border-color:var(--red);color:var(--red);" onclick="cancelarAgendamento(\'' + p.id + '\')">Cancelar publicação</button>';
@@ -4282,12 +4282,10 @@ async function cancelarAgendamento(postId){
   const cancelWebhook = localStorage.getItem('n8n_cancel_webhook_url') || '';
 
   let confirmMsg = 'Cancelar a publicação agendada deste post?\n\n';
-  if(execId && cancelWebhook){
-    confirmMsg += 'A execução #' + execId + ' será deletada no n8n e o post voltará para Pendente.';
-  } else if(!execId){
-    confirmMsg += 'ATENÇÃO: Execution ID não foi salvo. Só será possível reverter o status local — cancele manualmente no painel do n8n.';
-  } else if(!cancelWebhook){
-    confirmMsg += 'ATENÇÃO: Webhook de cancelamento não configurado em Configurações. Só reverte localmente.';
+  if(cancelWebhook){
+    confirmMsg += 'O post será marcado como cancelado no Google Sheets. Quando chegar o horário, o workflow do n8n verifica essa flag e termina sem publicar no Instagram.';
+  } else {
+    confirmMsg += 'ATENÇÃO: Webhook de cancelamento não configurado em Configurações. Só reverte o status local — a publicação automática NÃO será interrompida.';
   }
   if(!confirm(confirmMsg)) return;
 
@@ -4299,7 +4297,7 @@ async function cancelarAgendamento(postId){
       const res = await fetch(cancelWebhook, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ executionId: execId })
+        body: JSON.stringify({ postId: p.id, executionId: execId })
       });
       if(res.ok){
         try {
@@ -4332,13 +4330,11 @@ async function cancelarAgendamento(postId){
   updateSchedBadge();
 
   if(n8nCancelOk){
-    showNotif('Agendamento cancelado no n8n e post revertido para Pendente.', 'success');
+    showNotif('Cancelamento registrado no Sheets. O workflow não publicará este post.', 'success');
   } else if(n8nError){
-    showNotif('Post revertido localmente, mas n8n retornou erro: ' + n8nError, 'warning');
-  } else if(!execId){
-    showNotif('Post revertido localmente (sem execution ID — cancele manualmente no n8n).', 'warning');
+    showNotif('Post revertido localmente, mas o Sheets retornou erro: ' + n8nError + '. O workflow pode publicar mesmo assim — verifique manualmente.', 'warning');
   } else if(!cancelWebhook){
-    showNotif('Post revertido localmente. Configure o webhook de cancelamento em Configurações.', 'warning');
+    showNotif('Post revertido localmente. Configure o webhook de cancelamento em Configurações — senão o workflow publica mesmo assim.', 'warning');
   } else {
     showNotif('Post revertido localmente.', 'info');
   }
