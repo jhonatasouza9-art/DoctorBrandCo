@@ -954,18 +954,179 @@ function toggleTheme(){
 // 
 // DATABASE
 // 
-let DB = JSON.parse(localStorage.getItem('db_db_v3') || 'null') || {
- users: [],
- posts: [
- { id:'p1', userId:'u1', title:'Cuidados com a pele no verão', caption:' O verão chegou e sua pele precisa de atenção! 5 dicas essenciais para manter a saúde da pele nos dias mais quentes.\n\n1⃣ Protetor solar FPS 50+\n2⃣ Hidratação: 2L de água\n3⃣ Evite 10h-16h\n4⃣ Roupas UV\n5⃣ Consulte seu dermatologista\n\n#dermatologia #skincare #saude', type:'carrossel', status:'aprovado', date:'03/04/2026', week:14, driveUrl:'', emoji:'', theme:'Educação', revisionNote:'', revisionDone:false, scheduledAt:'', scheduledTime:'' },
- { id:'p2', userId:'u1', title:'Mitos sobre botox', caption:' Os MITOS mais comuns do botox! Como médica, meu papel é educar.\n\n MITO: Botox vicia\n FATO: É reversível e seguro\n\n MITO: Congela o rosto\n FATO: Quando bem aplicado mantém expressividade\n\n#botox #dermatologista', type:'reels', status:'revisao', date:'07/04/2026', week:15, driveUrl:'', emoji:'', theme:'Autoridade', revisionNote:'Ajustar a legenda do segundo slide. Remover a parte sobre "antes e depois" e adicionar um CTA mais claro no final.', revisionDone:false, scheduledAt:'', scheduledTime:'' },
- { id:'p3', userId:'u1', title:'Rotina de skincare noturna', caption:' Sua pele trabalha à noite! Aproveite para aplicar os produtos certos.\n\n Limpeza dupla\n Tônico balanceador\n Sérum com ativos\n Hidratante noturno\n\n#skincare #rotinanoturna', type:'imagem', status:'pendente', date:'10/04/2026', week:15, driveUrl:'', emoji:'', theme:'Educação', revisionNote:'', revisionDone:false, scheduledAt:'', scheduledTime:'' },
- { id:'p4', userId:'u1', title:'Acne na fase adulta', caption:' Acne não é só coisa de adolescente! Adultos entre 25-45 anos também sofrem com ela.\n\nCausas na fase adulta:\n Estresse\n Desequilíbrio hormonal\n Produtos inadequados\n\nAgende uma consulta! \n\n#acne #dermatologia', type:'carrossel', status:'aprovado', date:'15/04/2026', week:16, driveUrl:'', emoji:'', theme:'Conversão', revisionNote:'', revisionDone:false, scheduledAt:'2026-04-15', scheduledTime:'18:00' },
- { id:'p5', userId:'u2', title:'Coração saudável com pequenos hábitos', caption:' Pequenas mudanças têm grande impacto na saúde do coração!\n\n 30 min de caminhada\n Reduzir o sal\n Controlar estresse\n Exames preventivos\n\n#cardiologia #saudedocoracao', type:'carrossel', status:'aprovado', date:'05/04/2026', week:14, driveUrl:'', emoji:'', theme:'Educação', revisionNote:'', revisionDone:false, scheduledAt:'', scheduledTime:'' }
- ],
- aiHistory: []
+let DB = {
+  users: [],        // carregado do Firestore no login
+  posts: [],        // carregado do Firestore no login
+  briefings: [],    // carregado do Firestore no login
+  aiHistory: []     // local-only (histórico de IA por dispositivo)
 };
-function saveDB(){ localStorage.setItem('db_db_v3', JSON.stringify(DB)); }
+// ========================================================
+// SINCRONIZAÇÃO LOCAL ↔ FIRESTORE
+// ========================================================
+
+// Cache em localStorage (fallback offline rápido + bootstrap antes do login)
+function saveLocalCache(){
+  try { localStorage.setItem('db_db_v3', JSON.stringify(DB)); } catch(e){}
+}
+
+// Controle de escritas Firestore — debounce para evitar burst
+const _syncQueue = { posts: new Set(), briefings: new Set(), settings: false };
+let _syncTimer = null;
+
+function saveDB(){
+  saveLocalCache();
+  if(typeof FB_DB === 'undefined' || !CU){
+    // Se Firebase não carregou ou ninguém logou, só cache local
+    return;
+  }
+  // Debounce de 400ms — acumula mudanças rápidas e envia juntas
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(flushSyncQueue, 400);
+}
+
+// Marca um item específico pra sincronizar (mais eficiente que sincronizar tudo)
+function markDirty(collection, id){
+  if(!id) return;
+  if(_syncQueue[collection]) _syncQueue[collection].add(id);
+}
+
+let _lastSyncedIds = { posts: new Set(), briefings: new Set() };
+
+async function flushSyncQueue(){
+  if(typeof FB_DB === 'undefined' || !CU) return;
+  try {
+    // === Sync POSTS ===
+    const currentPostIds = new Set(DB.posts.map(p => p.id));
+
+    // Upserts: todos os posts atuais
+    for(const p of DB.posts){
+      if(!p.id) continue;
+      const data = sanitizeForFirestore(p);
+      data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+      await FB_DB.collection('posts').doc(p.id).set(data, { merge: true });
+    }
+
+    // Deletes: ids que existiam na última sync mas sumiram agora
+    for(const id of _lastSyncedIds.posts){
+      if(!currentPostIds.has(id)){
+        await FB_DB.collection('posts').doc(id).delete().catch(()=>{});
+      }
+    }
+    _lastSyncedIds.posts = currentPostIds;
+
+    // === Sync BRIEFINGS ===
+    const currentBriefingIds = new Set((DB.briefings || []).map(b => b.id));
+
+    for(const b of (DB.briefings || [])){
+      if(!b.id) continue;
+      const data = sanitizeForFirestore(b);
+      data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+      await FB_DB.collection('briefings').doc(b.id).set(data, { merge: true });
+    }
+
+    for(const id of _lastSyncedIds.briefings){
+      if(!currentBriefingIds.has(id)){
+        await FB_DB.collection('briefings').doc(id).delete().catch(()=>{});
+      }
+    }
+    _lastSyncedIds.briefings = currentBriefingIds;
+
+    // Settings globais (token FB, webhooks, etc)
+    if(_syncQueue.settings){
+      _syncQueue.settings = false;
+      const s = {
+        fbToken: localStorage.getItem('fb_access_token') || '',
+        fbPages: JSON.parse(localStorage.getItem('fb_ig_pages') || '[]'),
+        n8nWebhookUrl: localStorage.getItem('n8n_webhook_url') || '',
+        n8nCancelWebhookUrl: localStorage.getItem('n8n_cancel_webhook_url') || '',
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: CU.id
+      };
+      await FB_DB.collection('settings').doc('global').set(s, { merge: true });
+    }
+  } catch(e){
+    console.error('[sync] Erro ao salvar no Firestore:', e);
+  }
+}
+
+// Remove campos que o Firestore não aceita (funções, undefined, etc)
+function sanitizeForFirestore(obj){
+  if(obj === null || obj === undefined) return null;
+  if(typeof obj !== 'object') return obj;
+  if(Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+  const clean = {};
+  for(const k in obj){
+    const v = obj[k];
+    if(typeof v === 'function') continue;
+    if(v === undefined) continue;
+    if(k.startsWith('_')) continue;  // campos privados internos (ex: _scheduling)
+    clean[k] = sanitizeForFirestore(v);
+  }
+  return clean;
+}
+
+// Carrega TUDO do Firestore para DB (chamado no login após auth)
+async function loadFromFirestore(){
+  if(typeof FB_DB === 'undefined'){ console.error('[sync] FB_DB indisponível'); return; }
+  console.log('[sync] Carregando dados do Firestore...');
+  try {
+    // Users (todos — precisa pra renderização)
+    const usersSnap = await FB_DB.collection('users').get();
+    DB.users = [];
+    usersSnap.forEach(d => DB.users.push(Object.assign({ id: d.id }, d.data())));
+    console.log('[sync] users carregados:', DB.users.length);
+
+    // Posts (filtra no cliente pela role do usuário)
+    let postsSnap;
+    if(CU.role === 'member'){
+      postsSnap = await FB_DB.collection('posts').where('userId', '==', CU.id).get();
+    } else {
+      postsSnap = await FB_DB.collection('posts').get();
+    }
+    DB.posts = [];
+    postsSnap.forEach(d => DB.posts.push(Object.assign({ id: d.id }, d.data())));
+    console.log('[sync] posts carregados:', DB.posts.length);
+
+    // Briefings
+    let briefingsSnap;
+    if(CU.role === 'member'){
+      briefingsSnap = await FB_DB.collection('briefings').where('userId', '==', CU.id).get();
+    } else {
+      briefingsSnap = await FB_DB.collection('briefings').get();
+    }
+    DB.briefings = [];
+    briefingsSnap.forEach(d => DB.briefings.push(Object.assign({ id: d.id }, d.data())));
+    console.log('[sync] briefings carregados:', DB.briefings.length);
+
+    // Settings globais (token FB, webhooks, etc)
+    const settingsDoc = await FB_DB.collection('settings').doc('global').get();
+    if(settingsDoc.exists){
+      const s = settingsDoc.data();
+      if(s.fbToken) localStorage.setItem('fb_access_token', s.fbToken);
+      if(s.fbPages) localStorage.setItem('fb_ig_pages', JSON.stringify(s.fbPages));
+      if(s.n8nWebhookUrl) localStorage.setItem('n8n_webhook_url', s.n8nWebhookUrl);
+      if(s.n8nCancelWebhookUrl) localStorage.setItem('n8n_cancel_webhook_url', s.n8nCancelWebhookUrl);
+      console.log('[sync] settings globais carregados');
+    }
+
+    // Atualiza baseline de ids conhecidos para próximo sync
+    _lastSyncedIds.posts = new Set(DB.posts.map(p => p.id));
+    _lastSyncedIds.briefings = new Set((DB.briefings || []).map(b => b.id));
+
+    saveLocalCache();
+    console.log('[sync] ✓ Carregamento completo');
+  } catch(e){
+    console.error('[sync] Erro ao carregar:', e);
+    throw e;
+  }
+}
+
+// Salva todas as configs globais no Firestore (token FB, webhooks)
+function markSettingsDirty(){
+  _syncQueue.settings = true;
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(flushSyncQueue, 400);
+}
 // 
 // AUTH
 // 
@@ -1037,12 +1198,8 @@ async function doLogin(){
       permissions: []
     }, profile);
 
-    const snapshot = await FB_DB.collection('users').get();
-    DB.users = [];
-    snapshot.forEach(d => {
-      DB.users.push(Object.assign({ id: d.id }, d.data()));
-    });
-    saveDB();
+    // Carrega TUDO do Firestore (users, posts, briefings, settings)
+    await loadFromFirestore();
 
     if(CU.role === 'headops') showHeadOps();
     else if(CU.role === 'collaborator') showCollab();
@@ -3074,7 +3231,7 @@ function rHSettings(c){
 function saveN8nWebhook(){
   const url = document.getElementById('n8n-webhook-input')?.value.trim();
   if(!url){ showNotif('Cole a URL do webhook do n8n','error'); return; }
-  localStorage.setItem('n8n_webhook_url', url);
+  localStorage.setItem('n8n_webhook_url', url); markSettingsDirty();;
   showNotif('URL do n8n salva!','success');
   hTab('settings', document.querySelectorAll('#page-headops .nav-item')[4]);
 }
@@ -3766,10 +3923,10 @@ const IG_BASE        = `https://graph.facebook.com/${IG_API_VERSION}`;
 
 /* ── Storage do token e contas ── */
 function getFBToken(){ return localStorage.getItem('fb_access_token') || ''; }
-function saveFBToken(t){ localStorage.setItem('fb_access_token', t.trim()); }
-function clearFBToken(){ localStorage.removeItem('fb_access_token'); localStorage.removeItem('fb_ig_pages'); rHSettings(document.getElementById('h-content')); showNotif('Token removido.','info'); }
+function saveFBToken(t){ localStorage.setItem('fb_access_token', t.trim()); markSettingsDirty(); }
+function clearFBToken(){ localStorage.removeItem('fb_access_token'); localStorage.removeItem('fb_ig_pages'); markSettingsDirty(); rHSettings(document.getElementById('h-content')); showNotif('Token removido.','info'); }
 function getFBPages(){ try{ return JSON.parse(localStorage.getItem('fb_ig_pages')||'[]'); }catch(e){ return []; } }
-function saveFBPages(pages){ localStorage.setItem('fb_ig_pages', JSON.stringify(pages)); }
+function saveFBPages(pages){ localStorage.setItem('fb_ig_pages', JSON.stringify(pages)); markSettingsDirty(); }
 
 /** Retorna o membro que tem igAccountId === id */
 function getMemberByIgId(igId){
@@ -4303,7 +4460,7 @@ function saveN8nCancelWebhook(){
   const val = el.value.trim();
   if(!val){ showNotif('Cole a URL do webhook de cancelamento','error'); return; }
   if(!/^https?:\/\//.test(val)){ showNotif('URL inválida — deve começar com https://','error'); return; }
-  localStorage.setItem('n8n_cancel_webhook_url', val);
+  localStorage.setItem('n8n_cancel_webhook_url', val); markSettingsDirty();;
   showNotif('Webhook de cancelamento salvo!','success');
 }
 
