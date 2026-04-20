@@ -2686,6 +2686,74 @@ function openCollabEdit(id){
   </div>`;
   openModal();
 }
+async function saveCollab(){
+  console.log('[DEBUG] saveCollab chamado');
+  const n = document.getElementById('cl-n').value.trim();
+  const u = document.getElementById('cl-u').value.trim();
+  const p = document.getElementById('cl-p').value;
+
+  if(!n || !u || !p){ showNotif('Nome, email e senha são obrigatórios','error'); return; }
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(u)){ showNotif('Email inválido','error'); return; }
+  if(p.length < 6){ showNotif('Senha precisa ter no mínimo 6 caracteres','error'); return; }
+  if(DB.users.find(x => x.email === u || x.username === u)){ showNotif('Já existe um usuário com este email','error'); return; }
+
+  if(typeof FB_AUTH === 'undefined' || typeof FB_DB === 'undefined'){
+    showNotif('Firebase não carregou — recarregue a página (Ctrl+Shift+R)','error');
+    return;
+  }
+
+  const perms = [...document.querySelectorAll('.perm-item input:checked')].map(i => i.value);
+
+  showNotif('Criando colaborador...', 'info');
+
+  let secondaryApp;
+  try {
+    secondaryApp = firebase.app('secondary');
+  } catch(e){
+    secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary');
+  }
+  const secondaryAuth = secondaryApp.auth();
+
+  try {
+    console.log('[DEBUG] Criando conta Firebase Auth para', u);
+    const cred = await secondaryAuth.createUserWithEmailAndPassword(u, p);
+    const newUid = cred.user.uid;
+    console.log('[DEBUG] ✓ Conta criada, uid:', newUid);
+
+    await secondaryAuth.signOut();
+
+    const profile = {
+      name: n,
+      email: u,
+      username: u,
+      role: 'collaborator',
+      active: true,
+      permissions: perms,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: CU.id
+    };
+
+    console.log('[DEBUG] Gravando perfil no Firestore...');
+    await FB_DB.collection('users').doc(newUid).set(profile);
+    console.log('[DEBUG] ✓ Perfil gravado');
+
+    DB.users.push(Object.assign({ id: newUid }, profile));
+    saveDB();
+    closeModal();
+    hTab('collaborators', document.querySelectorAll('#page-headops .nav-item')[1]);
+    showNotif('Colaborador "' + n + '" criado! Senha: ' + p + ' (anote e compartilhe)', 'success');
+  } catch(e){
+    console.error('[createCollab] ERRO:', e);
+    let msg = 'Erro: ' + e.message;
+    if(e.code === 'auth/email-already-in-use') msg = 'Este email já está em uso.';
+    else if(e.code === 'auth/weak-password') msg = 'Senha muito fraca — mínimo 6 caracteres.';
+    else if(e.code === 'auth/invalid-email') msg = 'Email em formato inválido.';
+    else if(e.code === 'permission-denied') msg = 'Sem permissão para criar. Verifique as regras do Firestore.';
+    else msg = 'Erro: ' + (e.code || e.message);
+    showNotif(msg, 'error');
+  }
+}
+
 function saveCollabEdit(id){
   const p = DB.posts.find(x => x.id === id);
   if(!p) return;
@@ -2696,6 +2764,7 @@ function saveCollabEdit(id){
   cTab('revisions', document.getElementById('cn-revisions'));
   showNotif('Post atualizado!', 'success');
 }
+
 function markRevisionDone(id){
   const p = DB.posts.find(x => x.id === id);
   if(!p) return;
@@ -3050,10 +3119,10 @@ function openAddMember(){
   <div class="modal-sub">Cadastre um novo médico na plataforma</div>
   <div class="form-row">
     <div class="form-group"><label class="form-label">Nome completo</label><input class="form-input" id="m-n" placeholder="Dra. Nome Sobrenome"></div>
-    <div class="form-group"><label class="form-label">Usuário</label><input class="form-input" id="m-u" placeholder="dra.nome"></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="m-u" type="email" placeholder="dra.nome@email.com"></div>
   </div>
   <div class="form-row">
-    <div class="form-group"><label class="form-label">Senha</label><input class="form-input" id="m-p" type="password" placeholder="••••••••"></div>
+    <div class="form-group"><label class="form-label">Senha</label><input class="form-input" id="m-p" type="password" placeholder="mín. 6 caracteres"></div>
     <div class="form-group"><label class="form-label">Especialidade</label><div class="select-wrap"><select class="form-select" id="m-sp">${['Dermatologia','Cardiologia','Ortopedia','Ginecologia','Neurologia','Pediatria','Endocrinologia','Oftalmologia','Psiquiatria','Geriatria','Outra'].map(s=>`<option>${s}</option>`).join('')}</select></div></div>
   </div>
   <div class="form-row">
@@ -3114,27 +3183,82 @@ function openEditMember(id){
   openModal();
 }
 
-function saveMember(){
-  const n=document.getElementById('m-n').value.trim();
-  const u=document.getElementById('m-u').value.trim();
-  const p=document.getElementById('m-p').value;
-  if(!n||!u||!p){showNotif('Nome, usuário e senha são obrigatórios','error');return;}
-  if(DB.users.find(x=>x.username===u)){showNotif('Usuário já existe','error');return;}
-  const perms=[...document.querySelectorAll('.perm-item input:checked')].map(i=>i.value);
+async function saveMember(){
+  console.log('[DEBUG] saveMember chamado');
+  const n = document.getElementById('m-n').value.trim();
+  const u = document.getElementById('m-u').value.trim();
+  const p = document.getElementById('m-p').value;
+
+  if(!n || !u || !p){ showNotif('Nome, email e senha são obrigatórios','error'); return; }
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(u)){ showNotif('Email inválido','error'); return; }
+  if(p.length < 6){ showNotif('Senha precisa ter no mínimo 6 caracteres','error'); return; }
+  if(DB.users.find(x => x.email === u || x.username === u)){ showNotif('Já existe um usuário com este email','error'); return; }
+
+  if(typeof FB_AUTH === 'undefined' || typeof FB_DB === 'undefined'){
+    showNotif('Firebase não carregou — recarregue a página (Ctrl+Shift+R)','error');
+    return;
+  }
+
+  const perms = [...document.querySelectorAll('.perm-item input:checked')].map(i => i.value);
   const igId = document.getElementById('m-igid')?.value || '';
   const igPages = getFBPages();
-  const igPage = igPages.find(pg=>pg.id===igId);
-  DB.users.push({
-    id:'u'+Date.now(),username:u,password:p,name:n,role:'member',
-    specialty:document.getElementById('m-sp').value,
-    roleLabel:document.getElementById('m-rl').value||'Médico',
-    igHandle:document.getElementById('m-ig').value || (igPage?'@'+igPage.username:''),
-    igAccountId: igId,
-    active:true,permissions:perms,
-    content:{docs:[],tasks:[],dashboard:{stats:[]}}
-  });
-  saveDB();closeModal();hTab('members',document.querySelector('#page-headops .nav-item'));
-  showNotif(`Membro "${n}" criado!`,'success');
+  const igPage = igPages.find(pg => pg.id === igId);
+
+  showNotif('Criando membro...', 'info');
+
+  // App secundário pra não deslogar o Head Ops
+  let secondaryApp;
+  try {
+    secondaryApp = firebase.app('secondary');
+  } catch(e){
+    secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary');
+  }
+  const secondaryAuth = secondaryApp.auth();
+
+  try {
+    console.log('[DEBUG] Criando conta Firebase Auth para', u);
+    const cred = await secondaryAuth.createUserWithEmailAndPassword(u, p);
+    const newUid = cred.user.uid;
+    console.log('[DEBUG] ✓ Conta criada, uid:', newUid);
+
+    await secondaryAuth.signOut();
+
+    const profile = {
+      name: n,
+      email: u,
+      username: u,
+      role: 'member',
+      specialty: document.getElementById('m-sp').value,
+      roleLabel: document.getElementById('m-rl').value || 'Médico',
+      igHandle: document.getElementById('m-ig').value || (igPage ? '@'+igPage.username : ''),
+      igAccountId: igId,
+      active: true,
+      permissions: perms,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: CU.id
+    };
+
+    console.log('[DEBUG] Gravando perfil no Firestore...');
+    await FB_DB.collection('users').doc(newUid).set(profile);
+    console.log('[DEBUG] ✓ Perfil gravado');
+
+    DB.users.push(Object.assign({ id: newUid }, profile));
+    saveDB();
+    closeModal();
+    hTab('members', document.querySelector('#page-headops .nav-item'));
+    showNotif('Membro "' + n + '" criado! Senha: ' + p + ' (anote e compartilhe)', 'success');
+  } catch(e){
+    console.error('[createMember] ERRO:', e);
+    console.error('[createMember] code:', e.code);
+    console.error('[createMember] message:', e.message);
+    let msg = 'Erro ao criar membro: ' + e.message;
+    if(e.code === 'auth/email-already-in-use') msg = 'Este email já está em uso no Firebase.';
+    else if(e.code === 'auth/weak-password') msg = 'Senha muito fraca — use pelo menos 6 caracteres.';
+    else if(e.code === 'auth/invalid-email') msg = 'Email em formato inválido.';
+    else if(e.code === 'permission-denied') msg = 'Sem permissão para criar. Verifique as regras do Firestore.';
+    else msg = 'Erro: ' + (e.code || e.message);
+    showNotif(msg, 'error');
+  }
 }
 
 function updateMember(){
@@ -3160,9 +3284,9 @@ function openAddCollab(){
  <div class="modal-sub">Adicione um membro à equipe DoctorBrand</div>
  <div class="form-row">
  <div class="form-group"><label class="form-label">Nome completo</label><input class="form-input" id="cl-n" placeholder="Nome Sobrenome"></div>
- <div class="form-group"><label class="form-label">Usuário</label><input class="form-input" id="cl-u" placeholder="collab.nome"></div>
+ <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="cl-u" type="email" placeholder="colaborador@email.com"></div>
  </div>
- <div class="form-group"><label class="form-label">Senha</label><input class="form-input" id="cl-p" type="password" placeholder="••••••••"></div>
+ <div class="form-group"><label class="form-label">Senha</label><input class="form-input" id="cl-p" type="password" placeholder="mín. 6 caracteres"></div>
  <div class="form-group"><label class="form-label">Permissões</label>
  <div class="perm-grid"><label class="perm-item selected"><input type="checkbox" value="revisions" checked onchange="togglePerm(this)"> Revisões</label><label class="perm-item"><input type="checkbox" value="post_edit" onchange="togglePerm(this)"> Editar Posts</label></div>
  </div>
@@ -3187,16 +3311,7 @@ function openEditCollab(id){
  <div class="modal-footer"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-cream btn-sm" onclick="updateCollab()">Salvar</button></div>`;
  openModal();
 }
-function saveCollab(){
- const n=document.getElementById('cl-n').value.trim();
- const u=document.getElementById('cl-u').value.trim();
- const p=document.getElementById('cl-p').value;
- if(!n||!u||!p){showNotif('Todos os campos são obrigatórios','error');return;}
- if(DB.users.find(x=>x.username===u)){showNotif('Usuário já existe','error');return;}
- const perms=[...document.querySelectorAll('.perm-item input:checked')].map(i=>i.value);
- DB.users.push({id:'cl'+Date.now(),username:u,password:p,name:n,role:'collaborator',active:true,permissions:perms});
- saveDB();closeModal();hTab('collaborators',document.querySelectorAll('#page-headops .nav-item')[1]);showNotif(`Colaborador "${n}" criado!`,'success');
-}
+
 function updateCollab(){
  const id=document.getElementById('edit-id').value;
  const cl=DB.users.find(u=>u.id===id);
