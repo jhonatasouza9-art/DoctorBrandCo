@@ -973,24 +973,120 @@ let CU = null; // current user
 document.addEventListener('keydown', e => {
  if(e.key==='Enter' && document.getElementById('page-login').classList.contains('active')) doLogin();
 });
-function doLogin(){
- const u = document.getElementById('login-user').value.trim();
- const p = document.getElementById('login-pass').value;
- const err = document.getElementById('login-err');
- const user = DB.users.find(x => x.username===u && x.password===p);
- if(!user){ err.classList.add('show'); return; }
- if(user.active===false){ err.textContent='Acesso desativado. Entre em contato com o Head Ops.'; err.classList.add('show'); return; }
- err.classList.remove('show');
- CU = user;
- if(user.role==='headops') showHeadOps();
- else if(user.role==='collaborator') showCollab();
- else showMember();
+async function doLogin(){
+  console.log('[DEBUG] doLogin chamado');
+  console.log('[DEBUG] typeof FB_AUTH:', typeof FB_AUTH);
+  console.log('[DEBUG] typeof FB_DB:', typeof FB_DB);
+  if(typeof firebase !== 'undefined'){ console.log('[DEBUG] firebase apps:', firebase.apps.map(a => a.name)); }
+
+  const email = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-err');
+  const btn = document.getElementById('btn-login');
+  err.classList.remove('show');
+
+  console.log('[DEBUG] email:', email, '| senha length:', pass.length);
+
+  if(!email || !pass){
+    err.textContent = 'Preencha email e senha';
+    err.classList.add('show');
+    return;
+  }
+
+  if(typeof FB_AUTH === 'undefined'){
+    err.textContent = 'Firebase não carregou. Recarregue a página (Ctrl+Shift+R).';
+    err.classList.add('show');
+    console.error('[DEBUG] FB_AUTH undefined — SDK não iniciou');
+    return;
+  }
+
+  if(btn){ btn.disabled = true; btn.textContent = 'Entrando...'; }
+
+  try {
+    console.log('[DEBUG] Tentando autenticar...');
+    const cred = await FB_AUTH.signInWithEmailAndPassword(email, pass);
+    const uid = cred.user.uid;
+    console.log('[DEBUG] ✓ Autenticado! UID:', uid);
+
+    console.log('[DEBUG] Buscando perfil no Firestore uid=', uid);
+    const doc = await FB_DB.collection('users').doc(uid).get();
+    console.log('[DEBUG] doc.exists:', doc.exists);
+
+    if(!doc.exists){
+      err.textContent = 'Usuário autenticado mas sem perfil na plataforma. Contate o Head Ops.';
+      err.classList.add('show');
+      await FB_AUTH.signOut();
+      return;
+    }
+
+    const profile = doc.data();
+    console.log('[DEBUG] profile:', profile);
+
+    if(profile.active === false){
+      err.textContent = 'Acesso desativado. Entre em contato com o Head Ops.';
+      err.classList.add('show');
+      await FB_AUTH.signOut();
+      return;
+    }
+
+    CU = Object.assign({
+      id: uid,
+      email: email,
+      username: email,
+      active: true,
+      permissions: []
+    }, profile);
+
+    const snapshot = await FB_DB.collection('users').get();
+    DB.users = [];
+    snapshot.forEach(d => {
+      DB.users.push(Object.assign({ id: d.id }, d.data()));
+    });
+    saveDB();
+
+    if(CU.role === 'headops') showHeadOps();
+    else if(CU.role === 'collaborator') showCollab();
+    else showMember();
+
+  } catch(e){
+    console.error('[auth] ERRO COMPLETO:', e);
+    console.error('[auth] code:', e.code);
+    console.error('[auth] message:', e.message);
+    let msg = 'Credenciais inválidas. Tente novamente.';
+    if(e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') msg = 'Email ou senha incorretos.';
+    else if(e.code === 'auth/wrong-password') msg = 'Senha incorreta.';
+    else if(e.code === 'auth/invalid-email') msg = 'Formato de email inválido.';
+    else if(e.code === 'auth/too-many-requests') msg = 'Muitas tentativas. Aguarde alguns minutos.';
+    else if(e.code === 'auth/network-request-failed') msg = 'Erro de rede. Verifique sua conexão.';
+    else if(e.code === 'auth/operation-not-allowed') msg = 'Login por email/senha não habilitado no Firebase.';
+    else msg = 'Erro: ' + (e.code || e.message || 'desconhecido');
+    err.textContent = msg;
+    err.classList.add('show');
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = 'Entrar na plataforma'; }
+  }
 }
-function doLogout(){
- CU = null;
- showPage('page-login');
- document.getElementById('login-user').value='';
- document.getElementById('login-pass').value='';
+
+async function esqueciSenha(){
+  const email = document.getElementById('login-user').value.trim();
+  if(!email){ showNotif('Digite seu email antes de clicar em Esqueci a senha','warning'); return; }
+  if(!confirm('Enviar email de recuperação para ' + email + '?')) return;
+  try {
+    await FB_AUTH.sendPasswordResetEmail(email);
+    showNotif('Email de recuperação enviado!','success');
+  } catch(e){
+    let msg = 'Erro: ' + e.message;
+    if(e.code === 'auth/user-not-found') msg = 'Nenhum usuário encontrado com este email.';
+    else if(e.code === 'auth/invalid-email') msg = 'Email inválido.';
+    showNotif(msg, 'error');
+  }
+}
+async function doLogout(){
+  try { if(typeof FB_AUTH !== 'undefined') await FB_AUTH.signOut(); } catch(e){}
+  CU = null;
+  showPage('page-login');
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
 }
 function showPage(id){
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
