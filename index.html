@@ -738,6 +738,26 @@ img, svg, input, textarea, select, button {
 }
 .ig-slider:hover .ig-slider-counter { opacity:1; }
 </style>
+
+  <!-- Firebase SDK (v10 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD17x3gab87JkT9WPRQGDhY-MP0uIJEVOY",
+      authDomain: "doctorbrandco-38e1e.firebaseapp.com",
+      projectId: "doctorbrandco-38e1e",
+      storageBucket: "doctorbrandco-38e1e.firebasestorage.app",
+      messagingSenderId: "533889211990",
+      appId: "1:533889211990:web:0b0e6648d33501f20ee5f7",
+      measurementId: "G-6K9T6Z3P45"
+    };
+    firebase.initializeApp(firebaseConfig);
+    window.FB_AUTH = firebase.auth();
+    window.FB_DB = firebase.firestore();
+  </script>
 </head>
 <body>
 <!-- LOGIN -->
@@ -768,10 +788,11 @@ img, svg, input, textarea, select, button {
  <div class="login-form-panel">
  <div class="login-form-title">Bem-vindo de volta</div>
  <p class="login-form-sub">Acesse sua plataforma exclusiva</p>
- <div class="field"><label>Usuário</label><input type="text" id="login-user" placeholder="seu.usuario" autocomplete="username"></div>
+ <div class="field"><label>Email</label><input type="email" id="login-user" placeholder="seu@email.com" autocomplete="email"></div>
  <div class="field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
- <button class="btn-login" onclick="doLogin()">Entrar na plataforma</button>
+ <button class="btn-login" id="btn-login" onclick="doLogin()">Entrar na plataforma</button>
  <div class="login-err" id="login-err">Credenciais inválidas. Tente novamente.</div>
+ <div style="margin-top:10px;text-align:center;"><a href="javascript:void(0)" onclick="esqueciSenha()" style="font-size:12px;color:var(--text-3);text-decoration:underline;">Esqueci a senha</a></div>
  <div class="login-foot">DoctorBrand Co. © 2026 · Todos os direitos reservados</div>
  </div>
  </div>
@@ -934,29 +955,7 @@ function toggleTheme(){
 // DATABASE
 // 
 let DB = JSON.parse(localStorage.getItem('db_db_v3') || 'null') || {
- users: [
- { id:'headops', username:'headops', password:'head123', name:'Head Ops', role:'headops', active:true },
- { id:'collab1', username:'collab.marina', password:'marina123', name:'Marina Costa', role:'collaborator', active:true, permissions:['revisions','post_edit'] },
- { id:'collab2', username:'collab.pedro', password:'pedro123', name:'Pedro Alves', role:'collaborator', active:false, permissions:['revisions'] },
- {
- id:'u1', username:'dra.ana', password:'ana123',
- name:'Dra. Ana Rodrigues', role:'member',
- specialty:'Dermatologia', roleLabel:'Dermatologista',
- igHandle:'@dra.ana.derma', igConnected: false,
- active:true,
- permissions:['planning','ai','calendar','instagram','metrics'],
- content:{ docs:[], tasks:[], dashboard:{stats:[]} }
- },
- {
- id:'u2', username:'dr.carlos', password:'carlos123',
- name:'Dr. Carlos Menezes', role:'member',
- specialty:'Cardiologia', roleLabel:'Cardiologista',
- igHandle:'@dr.carlos.cardio', igConnected: false,
- active:true,
- permissions:['planning','calendar','metrics'],
- content:{ docs:[], tasks:[], dashboard:{stats:[]} }
- }
- ],
+ users: [],
  posts: [
  { id:'p1', userId:'u1', title:'Cuidados com a pele no verão', caption:' O verão chegou e sua pele precisa de atenção! 5 dicas essenciais para manter a saúde da pele nos dias mais quentes.\n\n1⃣ Protetor solar FPS 50+\n2⃣ Hidratação: 2L de água\n3⃣ Evite 10h-16h\n4⃣ Roupas UV\n5⃣ Consulte seu dermatologista\n\n#dermatologia #skincare #saude', type:'carrossel', status:'aprovado', date:'03/04/2026', week:14, driveUrl:'', emoji:'', theme:'Educação', revisionNote:'', revisionDone:false, scheduledAt:'', scheduledTime:'' },
  { id:'p2', userId:'u1', title:'Mitos sobre botox', caption:' Os MITOS mais comuns do botox! Como médica, meu papel é educar.\n\n MITO: Botox vicia\n FATO: É reversível e seguro\n\n MITO: Congela o rosto\n FATO: Quando bem aplicado mantém expressividade\n\n#botox #dermatologista', type:'reels', status:'revisao', date:'07/04/2026', week:15, driveUrl:'', emoji:'', theme:'Autoridade', revisionNote:'Ajustar a legenda do segundo slide. Remover a parte sobre "antes e depois" e adicionar um CTA mais claro no final.', revisionDone:false, scheduledAt:'', scheduledTime:'' },
