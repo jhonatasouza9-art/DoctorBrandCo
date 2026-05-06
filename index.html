@@ -316,23 +316,35 @@ function go(x){
 function vt(b){document.querySelectorAll('.view-toggle button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
 
 // ═══════════════════════════════════════
-// JSONP — 100% CORS-free
+// COMUNICAÇÃO — tenta fetch, fallback JSONP
 // ═══════════════════════════════════════
-let _n=0;
-function jsonp(params){
+async function gas(params){
+  const qs=Object.entries(params).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
+  const url=API+'?'+qs;
+
+  // Tenta fetch primeiro (funciona no GitHub Pages com Apps Script que retorna JSON)
+  try{
+    const r=await fetch(url,{redirect:'follow'});
+    if(r.ok){
+      const txt=await r.text();
+      try{return JSON.parse(txt)}catch(e){/* não era JSON puro, tenta JSONP abaixo */}
+    }
+  }catch(e){/* fetch falhou (CORS ou rede), tenta JSONP */}
+
+  // Fallback: JSONP (funciona se o Apps Script suporta callback)
   return new Promise((ok,fail)=>{
-    const cb='_jp'+(++_n);
-    const to=setTimeout(()=>{cleanup();fail(new Error('Timeout — verifique se o Apps Script está publicado corretamente'))},20000);
+    const cb='_jp'+(++_jpn);
+    const to=setTimeout(()=>{cleanup();fail(new Error('Timeout — Apps Script não respondeu em 20s'))},20000);
     function cleanup(){clearTimeout(to);delete window[cb];const s=document.getElementById('s_'+cb);if(s)s.remove()}
     window[cb]=d=>{cleanup();ok(d)};
-    const qs=Object.entries({...params,callback:cb}).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
     const s=document.createElement('script');
     s.id='s_'+cb;
-    s.src=API+'?'+qs;
-    s.onerror=()=>{cleanup();fail(new Error('Erro de rede — verifique a URL do Apps Script'))};
+    s.src=url+'&callback='+cb;
+    s.onerror=()=>{cleanup();fail(new Error('Falha na conexão com Apps Script'))};
     document.body.appendChild(s)
   })
 }
+let _jpn=0;
 
 // ═══════════════════════════════════════
 // DATA OPERATIONS
@@ -340,7 +352,7 @@ function jsonp(params){
 async function sync(){
   $('ct').innerHTML='<div class="loading"><div class="spinner"></div><div class="loading-text">Sincronizando com Google Sheets...</div></div>';
   try{
-    const r=await jsonp({action:'getAll'});
+    const r=await gas({action:'getAll'});
     if(r.status==='ok'){leads=r.data||[];toast(leads.length+' leads carregados','ok')}
     else toast('Erro: '+(r.message||'desconhecido'),'err')
   }catch(e){toast(e.message,'err');console.error(e)}
@@ -353,7 +365,7 @@ async function saveLead(){
   $('mSv').textContent='Salvando...';
   try{
     const act=editId?'update':'create';
-    const r=await jsonp({action:act,payload:JSON.stringify(d)});
+    const r=await gas({action:act,payload:JSON.stringify(d)});
     if(r.status==='ok'){toast(editId?'Lead atualizado!':'Lead criado!','ok');closeModal();await sync()}
     else toast('Erro: '+(r.message||''),'err')
   }catch(e){toast(e.message,'err')}
@@ -363,7 +375,7 @@ async function saveLead(){
 async function delLead(id){
   if(!confirm('Excluir este lead?'))return;
   try{
-    const r=await jsonp({action:'delete',payload:JSON.stringify({id:String(id)})});
+    const r=await gas({action:'delete',payload:JSON.stringify({id:String(id)})});
     if(r.status==='ok'){toast('Lead removido!','ok');await sync()}
     else toast('Erro: '+(r.message||''),'err')
   }catch(e){toast(e.message,'err')}
